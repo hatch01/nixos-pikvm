@@ -2,20 +2,49 @@
   description = "NixOS modules and packages for pikvm v3";
 
   inputs = {
-    flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs.url = "github:nixos/nixpkgs/release-25.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = nixpkgs.legacyPackages.${system};
-      in
-      {
+  outputs = {
+    self,
+    nixpkgs,
+    flake-parts,
+    ...
+  }:
+    flake-parts.lib.mkFlake {inherit self;} {
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+
+      flake = {
+        nixosModules = rec {
+          default = kvmd;
+          kvmd = {...}: {
+            imports = [./modules/default.nix];
+
+            # Make the package available to the module
+            nixpkgs.overlays = [
+              (final: prev: {
+                kvmd = final.callPackage ./packages/kvmd.nix {};
+              })
+            ];
+          };
+        };
+
+        # Example usage in NixOS configuration:
+        # {
+        #   imports = [ pikvm-flake.nixosModules.default ];
+        #   services.kvmd.enable = true;
+        # }
+      };
+
+      perSystem = {pkgs, ...}: {
         packages = rec {
           default = kvmd;
-          kvmd = pkgs.callPackage ./packages/kvmd.nix { };
+          kvmd = pkgs.callPackage ./packages/kvmd.nix {};
         };
-      }
-    );
+      };
+    };
 }

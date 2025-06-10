@@ -1,12 +1,12 @@
-{ lib
-, fetchFromGitHub
-, python3
-, tesseract
-, stdenv
-, binutils
-, withTesseract ? false
+{
+  lib,
+  fetchFromGitHub,
+  python3,
+  tesseract,
+  stdenv,
+  binutils,
+  withTesseract ? false,
 }:
-
 python3.pkgs.buildPythonApplication rec {
   pname = "kvmd";
   version = "4.82";
@@ -57,19 +57,23 @@ python3.pkgs.buildPythonApplication rec {
 
   postInstall = ''
     wrapProgram $out/bin/kvmd \
-      --suffix LD_LIBRARY_PATH : ${lib.makeLibraryPath ([ stdenv.cc.libc ] ++ lib.optional withTesseract tesseract)}
+      --suffix LD_LIBRARY_PATH : ${lib.makeLibraryPath ([stdenv.cc.libc] ++ lib.optional withTesseract tesseract)}
   '';
 
   meta = with lib; {
     description = "KVM over IP for Raspberry Pi and other devices";
     homepage = "https://github.com/pikvm/kvmd";
     license = licenses.gpl3Plus;
-    maintainers = with maintainers; [ eymeric ];
+    maintainers = with maintainers; [eymeric];
     platforms = platforms.linux;
     mainProgram = "kvmd";
     longDescription = ''
       PiKVM daemon - the main daemon that drives a Pi-based KVM over IP device.
-      OCR support is ${if withTesseract then "enabled" else "disabled"}.
+      OCR support is ${
+        if withTesseract
+        then "enabled"
+        else "disabled"
+      }.
     '';
   };
 }
