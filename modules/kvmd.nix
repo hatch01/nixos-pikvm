@@ -28,22 +28,6 @@ in {
       default = "pikvm";
       description = "Hostname for the PiKVM device.";
     };
-
-    nginx = {
-      enable = mkEnableOption "NGINX for PiKVM web interface";
-
-      sslCertificate = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        description = "Path to SSL certificate for NGINX.";
-      };
-
-      sslCertificateKey = mkOption {
-        type = types.nullOr types.path;
-        default = null;
-        description = "Path to SSL certificate key for NGINX.";
-      };
-    };
   };
 
   config = mkIf cfg.enable {
@@ -85,31 +69,9 @@ in {
         Type = "simple";
         User = "kvmd";
         Group = "kvmd";
-        ExecStart = "${cfg.package}/bin/kvmd";
+        ExecStart = "${lib.getExe cfg.package}";
         Restart = "on-failure";
         RestartSec = "3";
-      };
-    };
-
-    # NGINX configuration for the web interface
-    services.nginx = mkIf cfg.nginx.enable {
-      enable = true;
-      recommendedProxySettings = true;
-      recommendedTlsSettings = true;
-
-      # Basic configuration for kvmd
-      virtualHosts."${cfg.hostName}" = {
-        enableACME = cfg.nginx.sslCertificate == null && cfg.nginx.sslCertificateKey == null;
-        forceSSL = true;
-
-        # Use provided certificates if available
-        sslCertificate = cfg.nginx.sslCertificate;
-        sslCertificateKey = cfg.nginx.sslCertificateKey;
-
-        locations."/" = {
-          proxyPass = "http://localhost:8080";
-          proxyWebsockets = true;
-        };
       };
     };
 
