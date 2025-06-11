@@ -22,12 +22,6 @@ in {
       default = false;
       description = "Whether to enable OCR support using tesseract.";
     };
-
-    hostName = mkOption {
-      type = types.str;
-      default = "pikvm";
-      description = "Hostname for the PiKVM device.";
-    };
   };
 
   config = mkIf cfg.enable {
@@ -44,9 +38,6 @@ in {
       group = "kvmd";
       isSystemUser = true;
     };
-
-    # Configure system for PiKVM
-    networking.hostName = cfg.hostName;
 
     # Create necessary directories
     systemd.tmpfiles.rules = [
