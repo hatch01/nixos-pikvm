@@ -25,11 +25,6 @@ in {
   };
 
   config = mkIf cfg.enable {
-    # Ensure the kvmd package is included with desired options
-    environment.systemPackages = [
-      (cfg.package.override {withTesseract = cfg.withTesseract;})
-    ];
-
     # Create required users and groups
     users.groups.kvmd = {};
 
@@ -60,7 +55,7 @@ in {
         Type = "simple";
         User = "kvmd";
         Group = "kvmd";
-        ExecStart = "${lib.getExe cfg.package}";
+        ExecStart = "${lib.getExe (cfg.package.override {withTesseract = cfg.withTesseract;})}";
         Restart = "on-failure";
         RestartSec = "3";
       };
