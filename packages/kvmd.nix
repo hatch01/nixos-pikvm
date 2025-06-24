@@ -9,13 +9,13 @@
 }:
 python3.pkgs.buildPythonApplication rec {
   pname = "kvmd";
-  version = "4.82";
+  version = "4.86";
 
   src = fetchFromGitHub {
     owner = "pikvm";
     repo = "kvmd";
     rev = "v${version}";
-    sha256 = "sha256-6ooWvycNRRADV/OuJNyionfuV1RRPQokgf1EPpYdEEM=";
+    sha256 = "sha256-Y/648hhvH0RyF5DcoANNthcol/ggMa3NjJStykS+h5A=";
   };
 
   propagatedBuildInputs = with python3.pkgs; [
