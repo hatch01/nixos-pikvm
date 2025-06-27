@@ -1,13 +1,13 @@
 {
   lib,
   fetchFromGitHub,
-  python3,
+  python312,
   tesseract,
   stdenv,
   binutils,
   withTesseract ? false,
 }:
-python3.pkgs.buildPythonApplication rec {
+python312.pkgs.buildPythonApplication rec {
   pname = "kvmd";
   version = "4.86";
 
@@ -18,7 +18,7 @@ python3.pkgs.buildPythonApplication rec {
     sha256 = "sha256-Y/648hhvH0RyF5DcoANNthcol/ggMa3NjJStykS+h5A=";
   };
 
-  propagatedBuildInputs = with python3.pkgs; [
+  propagatedBuildInputs = with python312.pkgs; [
     aiofiles
     aiohttp
     async-lru
