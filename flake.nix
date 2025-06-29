@@ -38,7 +38,8 @@
       perSystem = {pkgs, ...}: {
         packages = rec {
           default = kvmd;
-          kvmd = pkgs.callPackage ./packages/kvmd.nix {};
+          kvmd = pkgs.callPackage ./packages/kvmd.nix {inherit ustreamer;};
+          ustreamer = pkgs.callPackage ./packages/ustreamer.nix {};
         };
       };
     };
