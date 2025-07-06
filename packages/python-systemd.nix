@@ -17,6 +17,8 @@ buildPythonPackage rec {
     sha256 = "sha256-8p4m4iM/z4o6PHRQIpuSXb64tPTWGlujEYCDVLiIt2o=";
   };
 
+  pyproject = true;
+  build-system = [setuptools pkg-config];
   buildInputs = [setuptools systemd];
   nativeBuildInputs = [pkg-config];
 

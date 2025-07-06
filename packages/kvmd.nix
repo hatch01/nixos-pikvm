@@ -37,6 +37,8 @@ python312.pkgs.buildPythonApplication rec {
     rev = "v${version}";
     sha256 = "sha256-Z62MDtGLNPA08nMayALerCwxm6YaPRM6/Wcw4oQ0wdE=";
   };
+  pyproject = true;
+  build-system = with python312.pkgs; [setuptools];
 
   # src = builtins.path {
   #   path = "/home/eymeric/tmp/kvmd";

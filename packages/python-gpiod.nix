@@ -11,6 +11,8 @@ python3.pkgs.buildPythonPackage rec {
     sha256 = "sha256-2qhA7VtpHnB4qc8hx5/oE7mpHD7Qvbr64Bgce5i4AwA=";
   };
 
+  build-system = with python3.pkgs; [setuptools];
+  pyproject = true;
   propagatedBuildInputs = with python3.pkgs; [setuptools];
 
   meta = with pkgs.lib; {

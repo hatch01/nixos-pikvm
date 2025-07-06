@@ -11,5 +11,8 @@ python3.pkgs.buildPythonPackage rec {
     sha256 = "sha256-z1/fNWPV7Fbi95LzovQyq66sUXoLBaEKdXpMWia7Ll0=";
   };
 
-  propagatedBuildInputs = with python3.pkgs; [setuptools pillow];
+  build-system = with python3.pkgs; [setuptools];
+  pyproject = true;
+
+  propagatedBuildInputs = with python3.pkgs; [setuptools pillow smbus2 pyftdi cbor2 rpi-gpio spidev];
 }
