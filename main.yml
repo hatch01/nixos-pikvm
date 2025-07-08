@@ -1,0 +1,144 @@
+# Don't touch this file otherwise your device may stop working.
+# Use override.yaml to modify required settings.
+# You can find a working configuration in /usr/share/kvmd/configs.default/kvmd.
+
+logging: !include logging.yaml
+
+janus:
+  cmd:
+    [
+      "/nix/store/q70v1v6j2vh6403qbb4fncj6kphkrkc8-kvmd-4.47/bin/kvmd-janus",
+      "--disable-colors",
+      "--plugins-folder=/usr/lib/ustreamer/janus",
+      "--configs-folder=/etc/kvmd/janus",
+      "--interface={src_ip}",
+      "{o_stun_server}",
+    ]
+
+pst:
+  remount_cmd:
+    [
+      "/nix/store/slk0ii258j68vpwwjzlzmjzm4v9jp99q-sudo-1.9.17/bin/sudo",
+      "--non-interactive",
+      "/nix/store/q70v1v6j2vh6403qbb4fncj6kphkrkc8-kvmd-4.47/bin/kvmd-helper-pst-remount",
+      "{mode}",
+    ]
+
+otgnet:
+  firewall:
+    iptables_cmd:
+      [
+        "/nix/store/xz6g2zw6dlba2ds26cikijmvjc3qi89m-iptables-1.8.11/bin/iptables",
+        "--wait=5",
+      ]
+  iface:
+    ip_cmd:
+      ["/nix/store/i5h4gv3dlm3adklza1lqvc0ygab2vrbz-iproute2-6.14.0/bin/ip"]
+  commands:
+    pre_start_cmd:
+      [
+        "/nix/store/djvf64kcr61kxwv04ipbim4b06zrkskj-coreutils-full-9.7/bin/true",
+      ]
+    post_start_cmd:
+      [
+        "/nix/store/34mbfck7lkqkfpi826fmw56iyr16qyml-systemd-257.6/bin/systemd-run",
+        "--unit=kvmd-otgnet-dnsmasq",
+        "/nix/store/iiclkq94f8afqg3v1bpwik871k3n2m8a-dnsmasq-2.91/bin/dnsmasq",
+        "--conf-file=/dev/null",
+        "--pid-file",
+        "--user=dnsmasq",
+        "--interface={iface}",
+        "--port=0",
+        "--dhcp-range={dhcp_ip_begin},{dhcp_ip_end},24h",
+        "--dhcp-leasefile=/run/kvmd/dnsmasq.lease",
+        "--dhcp-option={dhcp_option_3}",
+        "--dhcp-option=6",
+        "--keep-in-foreground",
+      ]
+    pre_stop_cmd:
+      [
+        "/nix/store/34mbfck7lkqkfpi826fmw56iyr16qyml-systemd-257.6/bin/systemctl",
+        "stop",
+        "kvmd-otgnet-dnsmasq",
+      ]
+    post_stop_cmd:
+      [
+        "/nix/store/djvf64kcr61kxwv04ipbim4b06zrkskj-coreutils-full-9.7/bin/true",
+      ]
+
+kvmd:
+  info:
+    extras: "/nix/store/q70v1v6j2vh6403qbb4fncj6kphkrkc8-kvmd-4.47/lib/python3.12/site-packages/kvmd/apps/kvmd/info"
+    hw:
+      platform: "/etc/kvmd/platform"
+      vcgencmd_cmd:
+        [
+          "/nix/store/7snvkfs3a6hhbqgsrv9xcyhnq3pz1n7v-libraspberrypi-unstable-2022-06-16/bin/vcgencmd",
+        ]
+
+  hid:
+    type: otg
+
+  atx:
+    type: gpio
+
+  msd:
+    type: otg
+    remount_cmd:
+      [
+        "/nix/store/slk0ii258j68vpwwjzlzmjzm4v9jp99q-sudo-1.9.17/bin/sudo",
+        "--non-interactive",
+        "/nix/store/q70v1v6j2vh6403qbb4fncj6kphkrkc8-kvmd-4.47/bin/kvmd-helper-otgmsd-remount",
+        "{mode}",
+      ]
+    root_path: /var/lib/kvmd/msd
+
+  streamer:
+    pre_start_cmd:
+      [
+        "/nix/store/djvf64kcr61kxwv04ipbim4b06zrkskj-coreutils-full-9.7/bin/true",
+      ]
+    post_stop_cmd:
+      [
+        "/nix/store/djvf64kcr61kxwv04ipbim4b06zrkskj-coreutils-full-9.7/bin/true",
+      ]
+
+    h264_bitrate:
+      default: 5000
+    cmd:
+      - "/nix/store/aikl245qxfgmr01hw33w6nf5c08s814l-ustreamer-6.31/bin/ustreamer"
+      - "--device=/dev/kvmd-video"
+      - "--persistent"
+      - "--dv-timings"
+      - "--format=uyvy"
+      - "--buffers=6"
+      - "--encoder=m2m-image"
+      - "--workers=3"
+      - "--quality={quality}"
+      - "--desired-fps={desired_fps}"
+      - "--drop-same-frames=30"
+      - "--unix={unix}"
+      - "--unix-rm"
+      - "--unix-mode=0660"
+      - "--exit-on-parent-death"
+      - "--process-name-prefix={process_name_prefix}"
+      - "--notify-parent"
+      - "--no-log-colors"
+      - "--jpeg-sink=kvmd::ustreamer::jpeg"
+      - "--jpeg-sink-mode=0660"
+      - "--h264-sink=kvmd::ustreamer::h264"
+      - "--h264-sink-mode=0660"
+      - "--h264-bitrate={h264_bitrate}"
+      - "--h264-gop={h264_gop}"
+
+media:
+  memsink:
+    h264:
+      sink: "kvmd::ustreamer::h264"
+
+vnc:
+  memsink:
+    jpeg:
+      sink: "kvmd::ustreamer::jpeg"
+    h264:
+      sink: "kvmd::ustreamer::h264"
