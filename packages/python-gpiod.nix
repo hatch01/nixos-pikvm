@@ -13,7 +13,7 @@ python3.pkgs.buildPythonPackage rec {
 
   build-system = with python3.pkgs; [setuptools];
   pyproject = true;
-  propagatedBuildInputs = with python3.pkgs; [setuptools];
+  propagatedBuildInputs = with python3.pkgs; [setuptools libgpiod];
 
   meta = with pkgs.lib; {
     description = "Python bindings for libgpiod";

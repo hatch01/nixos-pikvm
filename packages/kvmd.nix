@@ -83,7 +83,6 @@ python312.pkgs.buildPythonApplication rec {
         pkgs = pkgs;
         python3 = python312;
       })
-      libgpiod
       (import ./python-systemd.nix {
         inherit lib fetchFromGitHub pkg-config systemd;
         buildPythonPackage = python312.pkgs.buildPythonPackage;
@@ -128,7 +127,10 @@ python312.pkgs.buildPythonApplication rec {
       --replace "/usr/bin/ip" "${iproute2}/bin/ip" \
       --replace "/usr/bin/systemd-run" "${systemd}/bin/systemd-run" \
       --replace "/usr/bin/systemctl" "${systemd}/bin/systemctl" \
-      --replace "/usr/bin/janus" "${janus-gateway}/bin/janus"
+      --replace "/usr/bin/janus" "${janus-gateway}/bin/janus" \
+      --replace "/bin/true" "${coreutils}/bin/true" \
+      --replace "/bin/false" "${coreutils}/bin/false" \
+      --replace "/usr/sbin/iptables" "${iptables}/bin/iptables"
     substituteInPlace kvmd/apps/edidconf/__init__.py \
       --replace "/usr/bin/v4l2-ctl" "${v4l-utils}/bin/v4l2-ctl"
     substituteInPlace kvmd/plugins/ugpio/ipmi.py \
@@ -144,6 +146,7 @@ python312.pkgs.buildPythonApplication rec {
       --replace "#!/usr/bin/env python3" "#!${python312}/bin/python3"
     substituteInPlace kvmd/apps/oled/__init__.py \
       --replace "#!/usr/bin/env python3" "#!${python312}/bin/python3"
+
   '';
 
   postInstall = ''

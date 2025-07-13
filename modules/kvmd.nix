@@ -73,17 +73,17 @@ in {
     };
 
     # Create necessary directories
-    systemd.tmpfiles.rules = [
-      "d /run/kvmd 0755 kvmd kvmd -"
-      "d /run/kvmd/otg 0755 kvmd kvmd -"
-      "d /var/lib/kvmd 0755 kvmd kvmd -"
-      "d /var/lib/kvmd/msd 0755 kvmd kvmd -"
-      "d /var/lib/kvmd/pst 1775 kvmd kvmd -"
-      "d /etc/kvmd 0755 root root -"
-      "d /etc/kvmd/nginx 0755 root root -"
-      "d /etc/kvmd/nginx/ssl 0755 root root -"
-      "d /etc/kvmd/override.d 0755 root root -"
-    ];
+    # systemd.tmpfiles.rules = [
+    #   "d /run/kvmd 0755 kvmd kvmd -"
+    #   "d /run/kvmd/otg 0755 kvmd kvmd -"
+    #   "d /var/lib/kvmd 0755 kvmd kvmd -"
+    #   "d /var/lib/kvmd/msd 0755 kvmd kvmd -"
+    #   "d /var/lib/kvmd/pst 1775 kvmd kvmd -"
+    #   "d /etc/kvmd 0755 root root -"
+    #   "d /etc/kvmd/nginx 0755 root root -"
+    #   "d /etc/kvmd/nginx/ssl 0755 root root -"
+    #   "d /etc/kvmd/override.d 0755 root root -"
+    # ];
 
     # Patch: generate /etc/kvmd/main.yaml with correct extras, platform, vcgencmd_cmd, keymap, streamer, and pst/remount_cmd paths
     # environment.etc."kvmd/main.yaml".text = ''
@@ -214,7 +214,7 @@ in {
       serviceConfig = {
         Type = "simple";
         Restart = "always";
-        RestartSec = 3;
+        RestartSec = "3";
         ExecStartPre = "${lib.getBin cfg.package}/bin/kvmd-oled --interval=3 --clear-on-exit --image=@hello.ppm";
         ExecStart = "${lib.getBin cfg.package}/bin/kvmd-oled";
         TimeoutStopSec = 3;
@@ -286,7 +286,7 @@ in {
         Group = "kvmd-pst";
         Type = "simple";
         Restart = "always";
-        RestartSec = 3;
+        RestartSec = "3";
         ExecStart = "${lib.getBin cfg.package}/bin/kvmd-pst --run";
         TimeoutStopSec = 5;
       };
@@ -315,7 +315,7 @@ in {
         Group = "kvmd-vnc";
         Type = "simple";
         Restart = "always";
-        RestartSec = 3;
+        RestartSec = "3";
         ExecStart = "${lib.getBin cfg.package}/bin/kvmd-vnc --run";
         TimeoutStopSec = 3;
       };
@@ -328,7 +328,7 @@ in {
       serviceConfig = {
         Type = "simple";
         Restart = "always";
-        RestartSec = 3;
+        RestartSec = "3";
         ExecStart = "${lib.getBin cfg.package}/bin/kvmd-watchdog run";
         TimeoutStopSec = 3;
       };
@@ -364,39 +364,49 @@ in {
       KERNEL=="hidg2", GROUP="kvmd", SYMLINK+="kvmd-hid-mouse-alt"
     '';
 
-    # Add fstab rule for MSD (Mass Storage Device)
+    # Update the fstab entry for /var/lib/kvmd/msd to include x-systemd.requires
     fileSystems."/var/lib/kvmd/msd" = {
       device = "/dev/loop1";
       fsType = "vfat";
-      options = ["rw" "users" "X-kvmd.otgmsd-root=/var/lib/kvmd/msd"];
+      options = ["rw" "users" "X-kvmd.otgmsd-root=/var/lib/kvmd/msd" "x-systemd.requires=kvmd-msd-image.service"];
       neededForBoot = false;
     };
 
-    # Systemd service to create and format the MSD image, and set up loop device
-    # systemd.services.kvmd-msd-image = {
-    #   description = "Create and format MSD image for PiKVM";
-    #   before = ["local-fs.target"]; # Ensure this runs before mounting file systems
-    #   wantedBy = ["local-fs-pre.target"];
-    #   serviceConfig = {
-    #     Type = "oneshot";
-    #     RemainAfterExit = true;
-    #     ExecStart = ''
-    #       set -e
-    #       IMAGE=/var/lib/kvmd/msd.img
-    #       SIZE=128M
-    #       LOOPDEV=/dev/loop1
-    #       DIR=/var/lib/kvmd/msd
-    #       # Create image if missing
-    #       if [ ! -f "$IMAGE" ]; then
-    #         dd if=/dev/zero of="$IMAGE" bs=1M count=128
-    #         mkfs.vfat "$IMAGE"
-    #       fi
-    #       # Set up loop device
-    #       losetup "$LOOPDEV" "$IMAGE" || true
-    #       # Ensure mountpoint exists
-    #       mkdir -p "$DIR"
-    #     '';
-    #   };
-    # };
+    # Add a systemd service to ensure the file exists before mounting
+    systemd.services.kvmd-msd-image = {
+      description = "Ensure MSD image exists for PiKVM";
+      before = ["local-fs.target"];
+      wantedBy = ["local-fs-pre.target"];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        ExecStart = ''
+          set -e
+          IMAGE=/var/lib/kvmd/msd.img
+          SIZE=128M
+          LOOPDEV=/dev/loop1
+          # Create image if missing
+          if [ ! -f "$IMAGE" ]; then
+            dd if=/dev/zero of="$IMAGE" bs=1M count=128
+            mkfs.vfat "$IMAGE"
+          fi
+          # Set up loop device
+          losetup "$LOOPDEV" "$IMAGE" || true
+        '';
+      };
+    };
+
+    # Add boot options for PiKVM
+    boot.kernelParams = [
+      "hdmi_force_hotplug=1"
+      "gpu_mem=128"
+      "enable_uart=1"
+      "dtoverlay=tc358743"
+      "dtoverlay=disable-bt"
+      "dtoverlay=dwc2,dr_mode=peripheral"
+    ];
+
+    # Specify initramfs
+    # boot.initrd.kernel = "initramfs-linux.img";
   };
 }
