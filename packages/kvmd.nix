@@ -26,6 +26,7 @@
   makeWrapper,
   bash,
   libgpiod,
+  mount,
 }:
 python312.pkgs.buildPythonApplication rec {
   pname = "kvmd";
@@ -109,7 +110,6 @@ python312.pkgs.buildPythonApplication rec {
       libraspberrypi
       util-linux
       iptables
-      sudo
       openssl
       libgpiod
     ];
@@ -123,7 +123,7 @@ python312.pkgs.buildPythonApplication rec {
       --replace "#!/usr/bin/env python3" "#!${python312}/bin/python3"
     substituteInPlace kvmd/apps/__init__.py \
       --replace "/usr/bin/vcgencmd" "${libraspberrypi}/bin/vcgencmd" \
-      --replace "/usr/bin/sudo" "${sudo}/bin/sudo" \
+      --replace "/usr/bin/sudo" "/run/wrappers/bin/sudo" \
       --replace "/usr/bin/kvmd-helper-pst-remount" "$out/bin/kvmd-helper-pst-remount" \
       --replace "/usr/bin/ip" "${iproute2}/bin/ip" \
       --replace "/usr/bin/systemd-run" "${systemd}/bin/systemd-run" \
@@ -132,12 +132,14 @@ python312.pkgs.buildPythonApplication rec {
       --replace "/bin/true" "${coreutils}/bin/true" \
       --replace "/bin/false" "${coreutils}/bin/false" \
       --replace "/usr/sbin/iptables" "${iptables}/bin/iptables"
+    substituteInPlace kvmd/helpers/remount/__init__.py \
+      --replace "/bin/mount" "${mount}/bin/mount"
     substituteInPlace kvmd/apps/edidconf/__init__.py \
       --replace "/usr/bin/v4l2-ctl" "${v4l-utils}/bin/v4l2-ctl"
     substituteInPlace kvmd/plugins/ugpio/ipmi.py \
       --replace "/usr/bin/ipmitool" "${ipmitool}/bin/ipmitool"
     substituteInPlace kvmd/plugins/msd/otg/__init__.py \
-      --replace "/usr/bin/sudo" "${sudo}/bin/sudo" \
+      --replace "/usr/bin/sudo" "/run/wrappers/bin/sudo" \
       --replace "/usr/bin/kvmd-helper-otgmsd-remount" "$out/bin/kvmd-helper-otgmsd-remount"
     substituteInPlace hid/arduino/avrdude.py \
       --replace "/usr/bin/avrdude" "${avrdude}/bin/avrdude"
@@ -147,6 +149,9 @@ python312.pkgs.buildPythonApplication rec {
       --replace "#!/usr/bin/env python3" "#!${python312}/bin/python3"
     substituteInPlace kvmd/apps/oled/__init__.py \
       --replace "#!/usr/bin/env python3" "#!${python312}/bin/python3"
+
+    substituteInPlace kvmd/apps/otg/__init__.py \
+      --replace "os.mkdir(path)" "os.makedirs(path, exist_ok=True)"
 
   '';
 
