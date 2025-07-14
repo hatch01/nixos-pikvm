@@ -75,6 +75,7 @@ python312.pkgs.buildPythonApplication rec {
       setproctitle
       six
       spidev
+      libgpiod
       (import ../packages/luma.nix {
         pkgs = pkgs;
         python3 = python312;

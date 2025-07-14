@@ -380,7 +380,7 @@ in {
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
-        ExecStart = ''
+        ExecStart = pkgs.writeShellScript "kvmd-msd-image-setup" ''
           set -e
           IMAGE=/var/lib/kvmd/msd.img
           SIZE=128M
@@ -390,11 +390,17 @@ in {
             dd if=/dev/zero of="$IMAGE" bs=1M count=128
             mkfs.vfat "$IMAGE"
           fi
+          # Detach loop device if already associated
+          if ${pkgs.util-linux}/bin/losetup -j "$IMAGE" | grep -q "$LOOPDEV"; then
+            ${pkgs.util-linux}/bin/losetup -d "$LOOPDEV"
+          fi
           # Set up loop device
-          losetup "$LOOPDEV" "$IMAGE" || true
+          ${pkgs.util-linux}/bin/losetup "$LOOPDEV" "$IMAGE" || true
         '';
       };
     };
+
+    boot.kernelModules = ["configfs" "dwc2" "libcomposite" "tc358743"];
 
     # Add boot options for PiKVM
     boot.kernelParams = [
