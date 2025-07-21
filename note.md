@@ -23,3 +23,7 @@ PIKVM_BOARD=rpi4
 different boot options
 
 kvmd-gencert
+
+
+/etc/kvmd/janus/janus.plugin.ustreamer.jcfg
+/etc/kvmd/tc358743-edid.hex

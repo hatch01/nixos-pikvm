@@ -135,28 +135,28 @@ in {
       wantedBy = ["multi-user.target"];
     };
 
+    # systemd.services.kvmd-janus = {
+    #   description = "PiKVM - Janus WebRTC Gateway";
+    #   after = ["network.target" "network-online.target" "nss-lookup.target" "kvmd.service"];
+    #   wants = ["network-online.target"];
+    #   serviceConfig = {
+    #     User = "kvmd-janus";
+    #     Group = "kvmd-janus";
+    #     Type = "simple";
+    #     Restart = "always";
+    #     RestartSec = 3;
+    #     AmbientCapabilities = "CAP_NET_RAW";
+    #     LimitNOFILE = 65536;
+    #     UMask = "0117";
+    #     ExecStart = "${lib.getBin cfg.package}/bin/kvmd-janus --run";
+    #     TimeoutStopSec = 10;
+    #     KillMode = "mixed";
+    #   };
+    #   wantedBy = ["multi-user.target"];
+    # };
+
     systemd.services.kvmd-janus = {
       description = "PiKVM - Janus WebRTC Gateway";
-      after = ["network.target" "network-online.target" "nss-lookup.target" "kvmd.service"];
-      wants = ["network-online.target"];
-      serviceConfig = {
-        User = "kvmd-janus";
-        Group = "kvmd-janus";
-        Type = "simple";
-        Restart = "always";
-        RestartSec = 3;
-        AmbientCapabilities = "CAP_NET_RAW";
-        LimitNOFILE = 65536;
-        UMask = "0117";
-        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-janus --run";
-        TimeoutStopSec = 10;
-        KillMode = "mixed";
-      };
-      wantedBy = ["multi-user.target"];
-    };
-
-    systemd.services.kvmd-janus-static = {
-      description = "PiKVM - Janus WebRTC Gateway (Static Config)";
       after = ["network.target" "network-online.target" "nss-lookup.target" "kvmd.service"];
       wants = ["network-online.target"];
       serviceConfig = {
@@ -285,8 +285,8 @@ in {
       before = ["kvmd.service"];
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = "${pkgs.v4l-utils}/bin/v4l2-ctl --device=/dev/kvmd-video --set-edid=file=/etc/kvmd/tc358743-edid.hex --info-edid";
-        ExecStop = "${pkgs.v4l-utils}/bin/v4l2-ctl --device=/dev/kvmd-video --clear-edid";
+        ExecStart = "${pkgs.v4l-utils}/bin/v4l2-ctl --device=/dev/video0 --set-edid=file=/etc/kvmd/tc358743-edid.hex --info-edid";
+        ExecStop = "${pkgs.v4l-utils}/bin/v4l2-ctl --device=/dev/video0 --clear-edid";
         RemainAfterExit = true;
       };
       wantedBy = ["multi-user.target"];
@@ -431,7 +431,7 @@ in {
       };
     };
 
-    boot.kernelModules = ["configfs" "dwc2" "libcomposite" "tc358743"];
+    boot.kernelModules = ["configfs" "dwc2" "libcomposite" "tc358743" "rtc_cmos" "rtc_ds1307" "rtc_pcf8563"];
 
     # Add boot options for PiKVM
     boot.kernelParams = [
