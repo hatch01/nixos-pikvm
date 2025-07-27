@@ -2,11 +2,18 @@
   config,
   lib,
   pkgs,
+  inputs,
   ...
 }:
-with lib; let
+with lib;
+let
   cfg = config.services.kvmd;
-in {
+in
+{
+  imports = [
+    inputs.nixos-hardware.nixosModules.raspberry-pi-4
+  ];
+
   options.services.kvmd = {
     enable = mkEnableOption "PiKVM daemon (KVM over IP)";
 
@@ -26,20 +33,25 @@ in {
 
   config = mkIf cfg.enable {
     # Create required users and groups
-    users.groups.kvmd = {};
-    users.groups.kvmd-ipmi = {};
-    users.groups.kvmd-janus = {};
-    users.groups.kvmd-localhid = {};
-    users.groups.kvmd-media = {};
-    users.groups.kvmd-pst = {};
-    users.groups.kvmd-vnc = {};
-    users.groups.gpio = {};
+    users.groups.kvmd = { };
+    users.groups.kvmd-ipmi = { };
+    users.groups.kvmd-janus = { };
+    users.groups.kvmd-localhid = { };
+    users.groups.kvmd-media = { };
+    users.groups.kvmd-pst = { };
+    users.groups.kvmd-vnc = { };
+    users.groups.gpio = { };
 
     users.users.kvmd = {
       description = "KVM over IP daemon user";
       group = "kvmd";
       isSystemUser = true;
-      extraGroups = ["gpio" "video" "input" "tty"];
+      extraGroups = [
+        "gpio"
+        "video"
+        "input"
+        "tty"
+      ];
     };
     users.users.kvmd-ipmi = {
       description = "KVMD IPMI user";
@@ -104,24 +116,41 @@ in {
     # Create an empty /etc/kvmd/platform file
     # environment.etc."kvmd/platform".text = "";
 
+    hardware.raspberry-pi."4" = {
+      tc358743.enable = true;
+      dwc2 = {
+          enable = true;
+          dr_mode = "peripheral";
+      };
+      apply-overlays-dtmerge.enable = true;
+    };
+    hardware.deviceTree = {
+      filter = lib.mkForce "bcm2711-rpi-4-b.dtb";
+    };
+
+    hardware.i2c.enable = true;
+
     # Main kvmd service
     systemd.services.kvmd = {
       description = "PiKVM daemon";
-      wantedBy = ["multi-user.target"];
-      after = ["network.target" "kvmd-otg.service"];
+      wantedBy = [ "multi-user.target" ];
+      after = [
+        "network.target"
+        "kvmd-otg.service"
+      ];
 
       serviceConfig = {
         Type = "simple";
         User = "kvmd";
         Group = "kvmd";
-        ExecStart = "${lib.getExe (cfg.package.override {withTesseract = cfg.withTesseract;})} --run";
+        ExecStart = "${lib.getExe (cfg.package.override { withTesseract = cfg.withTesseract; })} --run";
         Restart = "on-failure";
         RestartSec = "3";
       };
     };
     systemd.services.kvmd-ipmi = {
       description = "PiKVM - IPMI to KVMD proxy";
-      after = ["kvmd.service"];
+      after = [ "kvmd.service" ];
       serviceConfig = {
         User = "kvmd-ipmi";
         Group = "kvmd-ipmi";
@@ -132,7 +161,7 @@ in {
         ExecStart = "${lib.getBin cfg.package}/bin/kvmd-ipmi --run";
         TimeoutStopSec = 3;
       };
-      wantedBy = ["multi-user.target"];
+      wantedBy = [ "multi-user.target" ];
     };
 
     # systemd.services.kvmd-janus = {
@@ -157,8 +186,13 @@ in {
 
     systemd.services.kvmd-janus = {
       description = "PiKVM - Janus WebRTC Gateway";
-      after = ["network.target" "network-online.target" "nss-lookup.target" "kvmd.service"];
-      wants = ["network-online.target"];
+      after = [
+        "network.target"
+        "network-online.target"
+        "nss-lookup.target"
+        "kvmd.service"
+      ];
+      wants = [ "network-online.target" ];
       serviceConfig = {
         User = "kvmd-janus";
         Group = "kvmd-janus";
@@ -172,12 +206,12 @@ in {
         TimeoutStopSec = 10;
         KillMode = "mixed";
       };
-      wantedBy = ["multi-user.target"];
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.kvmd-media = {
       description = "PiKVM - Media proxy server";
-      after = ["kvmd.service"];
+      after = [ "kvmd.service" ];
       serviceConfig = {
         User = "kvmd-media";
         Group = "kvmd-media";
@@ -187,12 +221,12 @@ in {
         ExecStart = "${lib.getBin cfg.package}/bin/kvmd-media --run";
         TimeoutStopSec = 3;
       };
-      wantedBy = ["multi-user.target"];
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.kvmd-oled = {
       description = "PiKVM - A small OLED daemon";
-      after = ["systemd-modules-load.service"];
+      after = [ "systemd-modules-load.service" ];
       unitConfig = {
         ConditionPathExists = "/dev/i2c-1";
       };
@@ -204,7 +238,7 @@ in {
         ExecStart = "${lib.getBin cfg.package}/bin/kvmd-oled";
         TimeoutStopSec = 3;
       };
-      wantedBy = ["multi-user.target"];
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.kvmd-oled-reboot = {
@@ -218,14 +252,18 @@ in {
         ExecStop = "/bin/true";
         RemainAfterExit = true;
       };
-      wantedBy = ["reboot.target"];
+      wantedBy = [ "reboot.target" ];
     };
 
     systemd.services.kvmd-oled-shutdown = {
       description = "PiKVM - Display shutdown message on the OLED";
       unitConfig = {
         Conflicts = "reboot.target";
-        Before = ["shutdown.target" "poweroff.target" "halt.target"];
+        Before = [
+          "shutdown.target"
+          "poweroff.target"
+          "halt.target"
+        ];
         DefaultDependencies = false;
       };
       serviceConfig = {
@@ -234,38 +272,44 @@ in {
         ExecStop = "/bin/true";
         RemainAfterExit = true;
       };
-      wantedBy = ["shutdown.target"];
+      wantedBy = [ "shutdown.target" ];
     };
 
     systemd.services.kvmd-otgnet = {
       description = "PiKVM - OTG network service";
-      after = ["kvmd-otg.service" "network-pre.target"];
-      wants = ["network-pre.target"];
+      after = [
+        "kvmd-otg.service"
+        "network-pre.target"
+      ];
+      wants = [ "network-pre.target" ];
       serviceConfig = {
         Type = "oneshot";
         ExecStart = "${lib.getBin cfg.package}/bin/kvmd-otgnet start";
         ExecStop = "${lib.getBin cfg.package}/bin/kvmd-otgnet stop";
         RemainAfterExit = true;
       };
-      wantedBy = ["multi-user.target"];
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.kvmd-otg = {
       description = "PiKVM - OTG setup";
-      after = ["kvmd-msd-image.service" "systemd-modules-load.service"];
-      before = ["kvmd.service"];
+      after = [
+        "kvmd-msd-image.service"
+        "systemd-modules-load.service"
+      ];
+      before = [ "kvmd.service" ];
       serviceConfig = {
         Type = "oneshot";
         ExecStart = "${lib.getBin cfg.package}/bin/kvmd-otg start";
         ExecStop = "${lib.getBin cfg.package}/bin/kvmd-otg stop";
         RemainAfterExit = true;
       };
-      wantedBy = ["multi-user.target"];
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.kvmd-pst = {
       description = "PiKVM - The KVMD persistent storage manager";
-      before = ["kvmd.service"];
+      before = [ "kvmd.service" ];
       serviceConfig = {
         User = "kvmd-pst";
         Group = "kvmd-pst";
@@ -275,26 +319,29 @@ in {
         ExecStart = "${lib.getBin cfg.package}/bin/kvmd-pst --run";
         TimeoutStopSec = 5;
       };
-      wantedBy = ["multi-user.target"];
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.kvmd-tc358743 = {
       description = "PiKVM - EDID loader for TC358743";
-      wants = ["dev-kvmd\\x2dvideo.device"];
-      after = ["dev-kvmd\\x2dvideo.device" "systemd-modules-load.service"];
-      before = ["kvmd.service"];
+      wants = [ "dev-kvmd\\x2dvideo.device" ];
+      after = [
+        "dev-kvmd\\x2dvideo.device"
+        "systemd-modules-load.service"
+      ];
+      before = [ "kvmd.service" ];
       serviceConfig = {
         Type = "oneshot";
         ExecStart = "${pkgs.v4l-utils}/bin/v4l2-ctl --device=/dev/video0 --set-edid=file=/etc/kvmd/tc358743-edid.hex --info-edid";
         ExecStop = "${pkgs.v4l-utils}/bin/v4l2-ctl --device=/dev/video0 --clear-edid";
         RemainAfterExit = true;
       };
-      wantedBy = ["multi-user.target"];
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.kvmd-vnc = {
       description = "PiKVM - VNC to KVMD/Streamer proxy";
-      after = ["kvmd.service"];
+      after = [ "kvmd.service" ];
       serviceConfig = {
         User = "kvmd-vnc";
         Group = "kvmd-vnc";
@@ -304,12 +351,12 @@ in {
         ExecStart = "${lib.getBin cfg.package}/bin/kvmd-vnc --run";
         TimeoutStopSec = 3;
       };
-      wantedBy = ["multi-user.target"];
+      wantedBy = [ "multi-user.target" ];
     };
 
     systemd.services.kvmd-watchdog = {
       description = "PiKVM - RTC-based hardware watchdog";
-      after = ["systemd-modules-load.service"];
+      after = [ "systemd-modules-load.service" ];
       serviceConfig = {
         Type = "simple";
         Restart = "always";
@@ -317,37 +364,37 @@ in {
         ExecStart = "${lib.getBin cfg.package}/bin/kvmd-watchdog run";
         TimeoutStopSec = 3;
       };
-      wantedBy = ["multi-user.target"];
+      wantedBy = [ "multi-user.target" ];
     };
 
     # Configure sudo permissions for kvmd users
-    security.sudo =  {
-        enable = true;
-        extraRules = [
-          {
-            users = ["kvmd"];
-            commands = [
-              {
-                command = "${cfg.package}/bin/kvmd-helper-otgmsd-remount *";
-                options = ["NOPASSWD"];
-              }
-              {
-                command = "${cfg.package}/bin/kvmd-helper-pst-remount *";
-                options = ["NOPASSWD"];
-              }
-            ];
-          }
-          {
-            users = ["kvmd-pst"];
-            commands = [
-              {
-                command = "${cfg.package}/bin/kvmd-helper-pst-remount *";
-                options = ["NOPASSWD"];
-              }
-            ];
-          }
-        ];
-      };
+    security.sudo = {
+      enable = true;
+      extraRules = [
+        {
+          users = [ "kvmd" ];
+          commands = [
+            {
+              command = "${cfg.package}/bin/kvmd-helper-otgmsd-remount *";
+              options = [ "NOPASSWD" ];
+            }
+            {
+              command = "${cfg.package}/bin/kvmd-helper-pst-remount *";
+              options = [ "NOPASSWD" ];
+            }
+          ];
+        }
+        {
+          users = [ "kvmd-pst" ];
+          commands = [
+            {
+              command = "${cfg.package}/bin/kvmd-helper-pst-remount *";
+              options = [ "NOPASSWD" ];
+            }
+          ];
+        }
+      ];
+    };
 
     # Ensure /dev/gpiochip* nodes are accessible to kvmd (try both possible subsystems)
     services.udev.extraRules = ''
@@ -379,12 +426,33 @@ in {
     '';
 
     # Update the fstab entry for /var/lib/kvmd/msd to include x-systemd.requires
-    fileSystems."/var/lib/kvmd/msd" = {
-      device = "/dev/loop1";
-      fsType = "vfat";
-      options = ["rw" "users" "X-kvmd.otgmsd-root=/var/lib/kvmd/msd" "x-systemd.requires=kvmd-msd-image.service"];
-      neededForBoot = false;
-    };
+    # fileSystems."/var/lib/kvmd/msd" = {
+    #   device = "LABEL=PIMSD";
+    #   fsType = "ext4";
+    #   options = [
+    #     "nodev"
+    #     "nosuid"
+    #     "noexec"
+    #     "ro"
+    #     "errors=remount-ro"
+    #     "X-kvmd.otgmsd-user=kvmd"
+    #   ];
+    #   neededForBoot = false;
+    # };
+
+    # fileSystems."/var/lib/kvmd/pst" = {
+    #   device = "LABEL=PIPST";
+    #   fsType = "ext4";
+    #   options = [
+    #     "nodev"
+    #     "nosuid"
+    #     "noexec"
+    #     "ro"
+    #     "errors=remount-ro"
+    #     "X-kvmd.pst-user=kvmd-pst"
+    #   ];
+    #   neededForBoot = false;
+    # };
 
     # Add system.activationScripts to create and set proper permissions for helper scripts
     # system.activationScripts.kvmd-helper-scripts = ''
@@ -406,8 +474,8 @@ in {
     # Add a systemd service to ensure the file exists before mounting
     systemd.services.kvmd-msd-image = {
       description = "Ensure MSD image exists for PiKVM";
-      before = ["var-lib-kvmd-msd.mount"];
-      wantedBy = ["var-lib-kvmd-msd.mount"];
+      before = [ "var-lib-kvmd-msd.mount" ];
+      wantedBy = [ "var-lib-kvmd-msd.mount" ];
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
@@ -431,7 +499,15 @@ in {
       };
     };
 
-    boot.kernelModules = ["configfs" "dwc2" "libcomposite" "tc358743" "rtc_cmos" "rtc_ds1307" "rtc_pcf8563"];
+    boot.kernelModules = [
+      "configfs"
+      "dwc2"
+      "libcomposite"
+      "tc358743"
+      "rtc_cmos"
+      "rtc_ds1307"
+      "rtc_pcf8563"
+    ];
 
     # Add boot options for PiKVM
     boot.kernelParams = [

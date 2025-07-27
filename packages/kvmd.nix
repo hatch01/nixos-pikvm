@@ -39,14 +39,15 @@ python312.pkgs.buildPythonApplication rec {
     sha256 = "sha256-Z62MDtGLNPA08nMayALerCwxm6YaPRM6/Wcw4oQ0wdE=";
   };
   pyproject = true;
-  build-system = with python312.pkgs; [setuptools];
+  build-system = with python312.pkgs; [ setuptools ];
 
   # src = builtins.path {
   #   path = "/home/eymeric/tmp/kvmd";
   #   name = "kvmd-src";
   # };
 
-  propagatedBuildInputs = with python312.pkgs;
+  propagatedBuildInputs =
+    with python312.pkgs;
     [
       aiofiles
       aiohttp
@@ -86,7 +87,12 @@ python312.pkgs.buildPythonApplication rec {
         python3 = python312;
       })
       (import ./python-systemd.nix {
-        inherit lib fetchFromGitHub pkg-config systemd;
+        inherit
+          lib
+          fetchFromGitHub
+          pkg-config
+          systemd
+          ;
         buildPythonPackage = python312.pkgs.buildPythonPackage;
         setuptools = python312.pkgs.setuptools;
       })
@@ -114,7 +120,10 @@ python312.pkgs.buildPythonApplication rec {
       libgpiod
     ];
 
-  nativeBuildInputs = [makeWrapper bash] ++ lib.optional withTesseract tesseract;
+  nativeBuildInputs = [
+    makeWrapper
+    bash
+  ] ++ lib.optional withTesseract tesseract;
 
   patchPhase = ''
     substituteInPlace setup.py \
@@ -158,7 +167,15 @@ python312.pkgs.buildPythonApplication rec {
   postInstall = ''
     wrapProgram $out/bin/kvmd \
       --suffix PYTHONPATH : $out/lib/python3.12/site-packages \
-      --suffix LD_LIBRARY_PATH : ${lib.makeLibraryPath ([stdenv.cc.libc libxkbcommon] ++ lib.optional withTesseract tesseract)}
+      --suffix LD_LIBRARY_PATH : ${
+        lib.makeLibraryPath (
+          [
+            stdenv.cc.libc
+            libxkbcommon
+          ]
+          ++ lib.optional withTesseract tesseract
+        )
+      }
     # Install all contrib keymaps
     mkdir -p $out/share/kvmd/keymaps
     cp -r $src/contrib/keymaps/* $out/share/kvmd/keymaps/
@@ -168,23 +185,24 @@ python312.pkgs.buildPythonApplication rec {
     substituteInPlace $out/bin/kvmd-gencert \
       --replace '/bin/bash' ${bash}/bin/bash
     wrapProgram $out/bin/kvmd-gencert \
-      --prefix PATH : ${lib.makeBinPath [openssl coreutils]}
+      --prefix PATH : ${
+        lib.makeBinPath [
+          openssl
+          coreutils
+        ]
+      }
   '';
 
   meta = with lib; {
     description = "KVM over IP for Raspberry Pi and other devices";
     homepage = "https://github.com/pikvm/kvmd";
     license = licenses.gpl3Plus;
-    maintainers = with maintainers; [eymeric];
+    maintainers = with maintainers; [ eymeric ];
     platforms = platforms.linux;
     mainProgram = "kvmd";
     longDescription = ''
       PiKVM daemon - the main daemon that drives a Pi-based KVM over IP device.
-      OCR support is ${
-        if withTesseract
-        then "enabled"
-        else "disabled"
-      }.
+      OCR support is ${if withTesseract then "enabled" else "disabled"}.
     '';
   };
 }

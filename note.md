@@ -27,3 +27,6 @@ kvmd-gencert
 
 /etc/kvmd/janus/janus.plugin.ustreamer.jcfg
 /etc/kvmd/tc358743-edid.hex
+
+setfacl -m u:kvmd-media:rwx kvmd/
+setfacl -m u:kvmd-pst:rwx kvmd/

@@ -18,6 +18,18 @@
         "type": "github"
       }
     },
+    "nixos-hardware": {
+      "locked": {
+        "lastModified": 1753165999,
+        "narHash": "sha256-h6UDjN9IOGatH3aJf6TgGYLUXrgsUpdzvp2CzWNDe0w=",
+        "path": "/home/eymeric/tmp/nixos-hardware",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/eymeric/tmp/nixos-hardware",
+        "type": "path"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1751637120,
@@ -52,6 +64,7 @@
     "root": {
       "inputs": {
         "flake-parts": "flake-parts",
+        "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs"
       }
     }

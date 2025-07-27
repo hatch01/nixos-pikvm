@@ -18,9 +18,15 @@ buildPythonPackage rec {
   };
 
   pyproject = true;
-  build-system = [setuptools pkg-config];
-  buildInputs = [setuptools systemd];
-  nativeBuildInputs = [pkg-config];
+  build-system = [
+    setuptools
+    pkg-config
+  ];
+  buildInputs = [
+    setuptools
+    systemd
+  ];
+  nativeBuildInputs = [ pkg-config ];
 
   meta = with lib; {
     description = "Python bindings for systemd";
