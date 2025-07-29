@@ -56,38 +56,42 @@ in
     users.users.kvmd-ipmi = {
       description = "KVMD IPMI user";
       group = "kvmd-ipmi";
+      extraGroups = [ "kvmd" ];
       isSystemUser = true;
     };
     users.users.kvmd-janus = {
       description = "KVMD Janus user";
       group = "kvmd-janus";
+      extraGroups = [ "kvmd" ];
       isSystemUser = true;
     };
     users.users.kvmd-localhid = {
       description = "KVMD Local HID user";
       group = "kvmd-localhid";
+      extraGroups = [ "kvmd" ];
       isSystemUser = true;
     };
     users.users.kvmd-media = {
       description = "KVMD Media user";
       group = "kvmd-media";
+      extraGroups = [ "kvmd" ];
       isSystemUser = true;
     };
     users.users.kvmd-pst = {
       description = "KVMD Persistent Storage user";
       group = "kvmd-pst";
+      extraGroups = [ "kvmd" ];
       isSystemUser = true;
     };
     users.users.kvmd-vnc = {
       description = "KVMD VNC user";
       group = "kvmd-vnc";
+      extraGroups = [ "kvmd" ];
       isSystemUser = true;
     };
 
     # Create necessary directories
     systemd.tmpfiles.rules = [
-      "d /run/kvmd 0755 kvmd kvmd -"
-      "d /run/kvmd/otg 0755 kvmd kvmd -"
       "d /var/lib/kvmd 0755 kvmd kvmd -"
       "d /var/lib/kvmd/msd 0755 kvmd kvmd -"
       "d /var/lib/kvmd/pst 1775 kvmd-pst kvmd-pst -"
@@ -143,6 +147,8 @@ in
         Type = "simple";
         User = "kvmd";
         Group = "kvmd";
+        RuntimeDirectory = "kvmd kvmd/otg";
+        RuntimeDirectoryMode = "0775";
         ExecStart = "${lib.getExe (cfg.package.override { withTesseract = cfg.withTesseract; })} --run";
         Restart = "on-failure";
         RestartSec = "3";
@@ -310,6 +316,7 @@ in
     systemd.services.kvmd-pst = {
       description = "PiKVM - The KVMD persistent storage manager";
       before = [ "kvmd.service" ];
+
       serviceConfig = {
         User = "kvmd-pst";
         Group = "kvmd-pst";
