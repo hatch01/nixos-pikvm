@@ -426,33 +426,33 @@ in
     '';
 
     # Update the fstab entry for /var/lib/kvmd/msd to include x-systemd.requires
-    # fileSystems."/var/lib/kvmd/msd" = {
-    #   device = "LABEL=PIMSD";
-    #   fsType = "ext4";
-    #   options = [
-    #     "nodev"
-    #     "nosuid"
-    #     "noexec"
-    #     "ro"
-    #     "errors=remount-ro"
-    #     "X-kvmd.otgmsd-user=kvmd"
-    #   ];
-    #   neededForBoot = false;
-    # };
+    fileSystems."/var/lib/kvmd/msd" = {
+      device = "LABEL=PIMSD";
+      fsType = "ext4";
+      options = [
+        "nodev"
+        "nosuid"
+        "noexec"
+        "ro"
+        "errors=remount-ro"
+        "X-kvmd.otgmsd-user=kvmd"
+      ];
+      neededForBoot = false;
+    };
 
-    # fileSystems."/var/lib/kvmd/pst" = {
-    #   device = "LABEL=PIPST";
-    #   fsType = "ext4";
-    #   options = [
-    #     "nodev"
-    #     "nosuid"
-    #     "noexec"
-    #     "ro"
-    #     "errors=remount-ro"
-    #     "X-kvmd.pst-user=kvmd-pst"
-    #   ];
-    #   neededForBoot = false;
-    # };
+    fileSystems."/var/lib/kvmd/pst" = {
+      device = "LABEL=PIPST";
+      fsType = "ext4";
+      options = [
+        "nodev"
+        "nosuid"
+        "noexec"
+        "ro"
+        "errors=remount-ro"
+        "X-kvmd.pst-user=kvmd-pst"
+      ];
+      neededForBoot = false;
+    };
 
     # Add system.activationScripts to create and set proper permissions for helper scripts
     # system.activationScripts.kvmd-helper-scripts = ''
