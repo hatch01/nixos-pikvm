@@ -430,6 +430,7 @@ in
       device = "LABEL=PIMSD";
       fsType = "ext4";
       options = [
+        "nofail"
         "nodev"
         "nosuid"
         "noexec"
@@ -444,6 +445,7 @@ in
       device = "LABEL=PIPST";
       fsType = "ext4";
       options = [
+        "nofail"
         "nodev"
         "nosuid"
         "noexec"
