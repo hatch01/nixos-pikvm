@@ -211,7 +211,7 @@ in
         AmbientCapabilities = "CAP_NET_RAW";
         LimitNOFILE = 65536;
         UMask = "0002";
-        ExecStart = "${janus-gateway}/bin/janus --disable-colors --plugins-folder=${ustreamer}/lib/ustreamer/janus --configs-folder=/etc/kvmd/janus";
+        ExecStart = "${pkgs.janus-gateway}/bin/janus --disable-colors --plugins-folder=${pkgs.ustreamer}/lib/ustreamer/janus --configs-folder=/etc/kvmd/janus";
         TimeoutStopSec = 10;
         KillMode = "mixed";
       };
