@@ -1,7 +1,7 @@
 {
   lib,
   fetchFromGitHub,
-  python312,
+  python3,
   tesseract,
   avrdude,
   stdenv,
@@ -28,7 +28,7 @@
   libgpiod,
   mount,
 }:
-python312.pkgs.buildPythonApplication rec {
+python3.pkgs.buildPythonApplication rec {
   pname = "kvmd";
   version = "4.47";
 
@@ -39,7 +39,7 @@ python312.pkgs.buildPythonApplication rec {
     sha256 = "sha256-Z62MDtGLNPA08nMayALerCwxm6YaPRM6/Wcw4oQ0wdE=";
   };
   pyproject = true;
-  build-system = with python312.pkgs; [ setuptools ];
+  build-system = with python3.pkgs; [ setuptools ];
 
   # src = builtins.path {
   #   path = "/home/eymeric/tmp/kvmd";
@@ -47,7 +47,7 @@ python312.pkgs.buildPythonApplication rec {
   # };
 
   propagatedBuildInputs =
-    with python312.pkgs;
+    with python3.pkgs;
     [
       aiofiles
       aiohttp
@@ -78,32 +78,16 @@ python312.pkgs.buildPythonApplication rec {
       setproctitle
       six
       spidev
-      libgpiod
-      (import ../packages/luma.nix {
-        pkgs = pkgs;
-        python3 = python312;
-      })
-      (import ../packages/python-gpiod.nix {
-        pkgs = pkgs;
-        python3 = python312;
-      })
-      (import ./python-systemd.nix {
-        inherit
-          lib
-          fetchFromGitHub
-          pkg-config
-          systemd
-          ;
-        buildPythonPackage = python312.pkgs.buildPythonPackage;
-        setuptools = python312.pkgs.setuptools;
-      })
+      luma-core
+      python3.pkgs.libgpiod
+      python3.pkgs.systemd
       xlib
       zstandard
       binutils
       python-periphery
     ]
     ++ [
-      ustreamer
+      (ustreamer.override {withPython = true;})
       janus-gateway
       v4l-utils
       coreutils
@@ -129,9 +113,9 @@ python312.pkgs.buildPythonApplication rec {
 
   patchPhase = ''
     substituteInPlace setup.py \
-      --replace "#!/usr/bin/env python3" "#!${python312}/bin/python3"
+      --replace "#!/usr/bin/env python3" "#!${python3}/bin/python3"
     substituteInPlace genmap.py \
-      --replace "#!/usr/bin/env python3" "#!${python312}/bin/python3"
+      --replace "#!/usr/bin/env python3" "#!${python3}/bin/python3"
     substituteInPlace kvmd/apps/__init__.py \
       --replace "/usr/bin/vcgencmd" "${libraspberrypi}/bin/vcgencmd" \
       --replace "/usr/bin/sudo" "/run/wrappers/bin/sudo" \
@@ -155,11 +139,11 @@ python312.pkgs.buildPythonApplication rec {
     substituteInPlace hid/arduino/avrdude.py \
       --replace "/usr/bin/avrdude" "${avrdude}/bin/avrdude"
     substituteInPlace kvmd/apps/oled/sensors.py \
-      --replace "#!/usr/bin/env python3" "#!${python312}/bin/python3"
+      --replace "#!/usr/bin/env python3" "#!${python3}/bin/python3"
     substituteInPlace kvmd/apps/oled/screen.py \
-      --replace "#!/usr/bin/env python3" "#!${python312}/bin/python3"
+      --replace "#!/usr/bin/env python3" "#!${python3}/bin/python3"
     substituteInPlace kvmd/apps/oled/__init__.py \
-      --replace "#!/usr/bin/env python3" "#!${python312}/bin/python3"
+      --replace "#!/usr/bin/env python3" "#!${python3}/bin/python3"
 
     substituteInPlace kvmd/apps/otg/__init__.py \
       --replace "os.mkdir(path)" "os.makedirs(path, exist_ok=True)"

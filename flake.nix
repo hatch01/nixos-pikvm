@@ -2,7 +2,8 @@
   description = "NixOS modules and packages for pikvm v3";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "/home/eymeric/code_bidouille/projet/nixpkgs";
+    # nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixos-hardware.url = "github:hatch01/nixos-hardware";
     flake-parts.url = "github:hercules-ci/flake-parts";
   };
@@ -44,8 +45,7 @@
         {
           packages = rec {
             default = kvmd;
-            kvmd = pkgs.callPackage ./packages/kvmd.nix { inherit ustreamer; };
-            ustreamer = pkgs.callPackage ./packages/ustreamer.nix { };
+            kvmd = pkgs.callPackage ./packages/kvmd.nix { };
           };
           formatter = pkgs.nixfmt-tree;
         };
