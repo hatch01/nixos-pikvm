@@ -12,6 +12,7 @@ in
 {
   imports = [
     inputs.nixos-hardware.nixosModules.raspberry-pi-4
+    ./nginx.nix
   ];
 
   options.services.kvmd = {
@@ -27,7 +28,7 @@ in
     withTesseract = mkOption {
       type = types.bool;
       default = false;
-      description = "Whether to enable OCR support using tesseract.";
+      description = "Enable Tesseract OCR support for text recognition";
     };
   };
 
@@ -122,9 +123,10 @@ in
 
     hardware.raspberry-pi."4" = {
       tc358743.enable = true;
+      xhci.enable = true;
       dwc2 = {
-          enable = true;
-          dr_mode = "peripheral";
+        enable = true;
+        dr_mode = "peripheral";
       };
       apply-overlays-dtmerge.enable = true;
     };
@@ -149,6 +151,7 @@ in
         Group = "kvmd";
         RuntimeDirectory = "kvmd kvmd/otg";
         RuntimeDirectoryMode = "0775";
+        UMask = "0002";
         ExecStart = "${lib.getExe (cfg.package.override { withTesseract = cfg.withTesseract; })} --run";
         Restart = "on-failure";
         RestartSec = "3";
@@ -207,7 +210,7 @@ in
         RestartSec = 3;
         AmbientCapabilities = "CAP_NET_RAW";
         LimitNOFILE = 65536;
-        UMask = "0117";
+        UMask = "0002";
         ExecStart = "${pkgs.janus-gateway}/bin/janus --disable-colors --plugins-folder=${pkgs.ustreamer}/lib/ustreamer/janus --configs-folder=/etc/kvmd/janus";
         TimeoutStopSec = 10;
         KillMode = "mixed";
@@ -224,8 +227,11 @@ in
         Type = "simple";
         Restart = "always";
         RestartSec = 3;
-        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-media --run";
-        TimeoutStopSec = 3;
+        UMask = "0002";
+        RuntimeDirectory = "kvmd";
+        RuntimeDirectoryMode = "0775";
+        ExecStart = "${cfg.package}/bin/kvmd-media --run";
+        TimeoutStopSec = 10;
       };
       wantedBy = [ "multi-user.target" ];
     };
@@ -294,7 +300,7 @@ in
         ExecStop = "${lib.getBin cfg.package}/bin/kvmd-otgnet stop";
         RemainAfterExit = true;
       };
-      wantedBy = [ "multi-user.target" ];
+      # wantedBy = [ "multi-user.target" ];  # Disabled - ECM network function not configured
     };
 
     systemd.services.kvmd-otg = {
@@ -361,18 +367,18 @@ in
       wantedBy = [ "multi-user.target" ];
     };
 
-    systemd.services.kvmd-watchdog = {
-      description = "PiKVM - RTC-based hardware watchdog";
-      after = [ "systemd-modules-load.service" ];
-      serviceConfig = {
-        Type = "simple";
-        Restart = "always";
-        RestartSec = "3";
-        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-watchdog run";
-        TimeoutStopSec = 3;
-      };
-      wantedBy = [ "multi-user.target" ];
-    };
+    # systemd.services.kvmd-watchdog = {
+    #   description = "PiKVM - RTC-based hardware watchdog";
+    #   after = [ "systemd-modules-load.service" ];
+    #   serviceConfig = {
+    #     Type = "simple";
+    #     Restart = "always";
+    #     RestartSec = "3";
+    #     ExecStart = "${lib.getBin cfg.package}/bin/kvmd-watchdog run";
+    #     TimeoutStopSec = 3;
+    #   };
+    #   # wantedBy = [ "multi-user.target" ];
+    # };
 
     # Configure sudo permissions for kvmd users
     security.sudo = {
@@ -512,6 +518,7 @@ in
       "configfs"
       "dwc2"
       "libcomposite"
+      "usb_f_ecm"
       "tc358743"
       "rtc_cmos"
       "rtc_ds1307"

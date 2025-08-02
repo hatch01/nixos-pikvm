@@ -30,3 +30,9 @@ kvmd-gencert
 
 setfacl -m u:kvmd-media:rwx kvmd/
 setfacl -m u:kvmd-pst:rwx kvmd/
+
+
+
+todo:
+- kvmd-watchdog
+- kvmd-otgnet

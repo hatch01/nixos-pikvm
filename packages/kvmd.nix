@@ -58,6 +58,7 @@ python312.pkgs.buildPythonApplication rec {
       evdev
       hidapi
       ldap
+      mako
       netifaces
       pam
       passlib
@@ -123,7 +124,8 @@ python312.pkgs.buildPythonApplication rec {
   nativeBuildInputs = [
     makeWrapper
     bash
-  ] ++ lib.optional withTesseract tesseract;
+  ]
+  ++ lib.optional withTesseract tesseract;
 
   patchPhase = ''
     substituteInPlace setup.py \
@@ -179,8 +181,14 @@ python312.pkgs.buildPythonApplication rec {
     # Install all contrib keymaps
     mkdir -p $out/share/kvmd/keymaps
     cp -r $src/contrib/keymaps/* $out/share/kvmd/keymaps/
-    # Install kvmd-gencert script and make it executable
 
+    # Install web files
+    mkdir -p $out/share/kvmd/web
+    if [ -d "$src/web" ]; then
+      cp -r $src/web/* $out/share/kvmd/web/
+    fi
+
+    # Install kvmd-gencert script and make it executable
     install -Dm755 $src/scripts/kvmd-gencert $out/bin/kvmd-gencert
     substituteInPlace $out/bin/kvmd-gencert \
       --replace '/bin/bash' ${bash}/bin/bash
