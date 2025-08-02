@@ -35,8 +35,8 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1754171891,
-        "narHash": "sha256-IXenx0nK4VsdTY2bJHS9BQ70PwD1yXikrONfvJTr6fo=",
+        "lastModified": 1754172563,
+        "narHash": "sha256-GJl+7oFzlSYnftzhO0mxwOESt0T6llycvT9CUQ3ZYKo=",
         "path": "/home/eymeric/code_bidouille/projet/nixpkgs",
         "type": "path"
       },
