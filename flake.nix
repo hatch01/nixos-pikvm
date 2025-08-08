@@ -5,6 +5,7 @@
     nixpkgs.url = "/home/eymeric/code_bidouille/projet/nixpkgs";
     # nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixos-hardware.url = "github:hatch01/nixos-hardware";
+    #nixos-hardware.url = "/home/eymeric/tmp/nixos-hardware";
     flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
