@@ -20,11 +20,11 @@
     },
     "nixos-hardware": {
       "locked": {
-        "lastModified": 1753816285,
-        "narHash": "sha256-8B7IGPypx+yA93o4mDOgaEvlpvvCOyo/L/90jKJeDsA=",
+        "lastModified": 1754685678,
+        "narHash": "sha256-oQ4JZiS7RNbyQ+LJQqtEOrO3a2zh5zSkgd/nBAZih8o=",
         "owner": "hatch01",
         "repo": "nixos-hardware",
-        "rev": "46cc6488711df05ae408839549d7f402f07b7df5",
+        "rev": "680761f019c3d37c5a3d920b1ff8c61ded68cd6b",
         "type": "github"
       },
       "original": {
