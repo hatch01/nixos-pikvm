@@ -63,7 +63,7 @@ in
         };
         "ustreamer" = {
           servers = {
-            "unix:/run/ustreamer/ustreamer.sock" = { };
+            "unix:/run/kvmd/ustreamer.sock" = { };
           };
         };
         "janus-ws" = {
@@ -326,7 +326,6 @@ in
       "d /tmp/kvmd-nginx/uwsgi_temp 0755 nginx nginx -"
       # Ensure socket directories have proper permissions for nginx access
       "d /run/kvmd 0775 kvmd kvmd -"
-      "d /run/ustreamer 0775 root kvmd -"
       "d /run/janus 0775 kvmd-janus kvmd-janus -"
     ];
   };
