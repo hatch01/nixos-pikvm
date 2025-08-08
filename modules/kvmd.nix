@@ -123,7 +123,7 @@ in
 
     hardware.raspberry-pi."4" = {
       tc358743.enable = true;
-      xhci.enable = true;
+      # xhci.enable = true; warning this cause boot to fail
       dwc2 = {
         enable = true;
         dr_mode = "peripheral";
