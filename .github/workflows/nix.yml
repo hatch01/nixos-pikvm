@@ -19,7 +19,7 @@ jobs:
 
       - name: Check nix flake
         run: |
-          nix flake check
+          nix flake check --all-systems
 
       - name: Build derivations
         run: |
