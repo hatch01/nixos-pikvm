@@ -170,7 +170,10 @@ in
               extraConfig = ''
                 rewrite ^/api/hid/print$ /hid/print break;
                 rewrite ^/api/hid/print\?(.*)$ /hid/print?$1 break;
-                client_max_body_size 100M;
+                limit_rate 6250k;
+                limit_rate_after 50k;
+                client_max_body_size 0;
+                proxy_request_buffering off;
                 auth_request off;
               '';
             };
@@ -202,7 +205,10 @@ in
               extraConfig = ''
                 rewrite ^/api/msd/write$ /msd/write break;
                 rewrite ^/api/msd/write\?(.*)$ /msd/write?$1 break;
-                client_max_body_size 100M;
+                limit_rate 6250k;
+                limit_rate_after 50k;
+                client_max_body_size 0;
+                proxy_request_buffering off;
                 auth_request off;
               '';
             };
