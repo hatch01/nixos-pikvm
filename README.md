@@ -71,6 +71,57 @@ All through a beautiful web interface! ✨
 | `nginx.httpsPort`             | `port`    | `443`        | 🔒 HTTPS port for nginx                             |
 | `nginx.httpsEnabled`          | `bool`    | `true`       | 🔒 Enable HTTPS support                             |
 
+## 🚀 How to Install (Raspberry Pi Example)
+
+This section outlines a typical installation workflow for NixOS PiKVM on a Raspberry Pi, inspired by a real-world home lab setup.
+
+### 1️⃣ Prepare Your Configuration
+
+Create a NixOS configuration for your Raspberry Pi.
+Example (see [`default.nix`](https://forge.onyx.ovh/eymeric/flake/src/branch/main/systems/lilas/default.nix) for a full config):
+
+```nix
+{
+  imports = [
+    inputs.nixos-hardware.nixosModules.raspberry-pi-4
+    inputs.pikvm.nixosModules.default
+  ];
+
+  services.kvmd = {
+    enable = true;
+    package = inputs.pikvm.packages.aarch64-linux.default;
+  };
+
+  # ...other options (see linked config for details)
+}
+```
+
+### 2️⃣ Generate the SD Card Image
+
+Use [`nixos-generators`](https://github.com/nix-community/nixos-generators) to build an SD image:
+
+```bash
+nix run nixpkgs#nixos-generators -- -f sd-aarch64 --flake .#<machine> --system aarch64-linux -o ./<machine>-sd-aarch64
+```
+
+Replace `<machine>` with your hostname or flake target.
+
+### 3️⃣ Flash the Image
+
+Flash the generated image to your SD card using a tool like [Caligula](https://github.com/ifd3f/caligula) or `dd`.
+
+### 4️⃣ Partitioning
+
+After flashing, add two ext4 partitions to your SD card:
+- **PIMSD**: Used for virtual USB (make it large enough for your ISOs)
+- **PIPST**: Used for PiKVM persistent storage
+
+You can use `gparted` or `fdisk` for partitioning.
+
+### 5️⃣ Boot & Test
+
+Insert the SD card, boot your Raspberry Pi, and cross your fingers!
+
 ## 🐛 Troubleshooting
 
 ### 🔍 Check Service Status
