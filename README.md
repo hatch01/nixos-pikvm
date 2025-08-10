@@ -30,109 +30,46 @@ All through a beautiful web interface! ✨
 - 🖼️ **OCR Support** - Optional Tesseract integration for text recognition
 - 🌊 **µStreamer Integration** - High-performance video streaming
 
-## 🚀 Quick Start
+## ✅ What's Working
 
-### 1️⃣ Add to your flake
+- 🌐 **Remote Access:**
+  Access your PiKVM web UI from anywhere, with real-time MJPEG video streaming and full keyboard/mouse control.
 
-```nix
-{
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    pikvm.url = "github:yourusername/nixos-pikvm";
-  };
+- 💾 **ISO Upload:**
+  Easily upload ISO images to your Raspberry Pi for virtual media mounting.
 
-  outputs = { self, nixpkgs, pikvm }: {
-    nixosConfigurations.your-system = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-      modules = [
-        pikvm.nixosModules.default
-        {
-          services.kvmd.enable = true;
-        }
-      ];
-    };
-  };
-}
-```
+---
 
-### 2️⃣ Basic Configuration
+## 📝 TODO & Roadmap
 
-```nix
-{
-  services.kvmd = {
-    enable = true;
-    withTesseract = true;           # 👁️ Enable OCR support
-  };
-}
-```
+- 🧹 **Module Cleanup:**
+  Refactor and polish the NixOS module for maintainability and clarity.
 
-### 3️⃣ Rebuild and Enjoy!
+- 🔄 **Exact nginx Config Parity:**
+  Ensure the nginx configuration matches the official PiKVM `kvmd` setup exactly for full compatibility.
 
-```bash
-sudo nixos-rebuild switch
-```
+- 📚 **Installation Documentation:**
+  Write step-by-step instructions for installing on NixOS, including disk formatting (potentially using [disko](https://github.com/nix-community/disko) for automated setup).
 
-That's it! 🎊 Your PiKVM is ready to rock!
+- 🚀 **Virtual Media Mounting Support:**
+  Add support for mounting virtual media (such as ISO images) directly through PiKVM.
+
+- ⬆️ **Upstream to nixpkgs:**
+  Prepare and submit the module/package for inclusion in the official [nixpkgs](https://github.com/NixOS/nixpkgs) repository.
+
+---
 
 ## 🛠️ Configuration Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `enable` | `bool` | `false` | 🟢 Enable the PiKVM daemon |
-| `package` | `package` | `pkgs.kvmd` | 📦 kvmd package to use |
-| `withTesseract` | `bool` | `false` | 👁️ Enable OCR with Tesseract |
-
-## 🏗️ Architecture
-
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   🌐 Web UI     │    │  🎥 µStreamer   │    │  🖥️ Target PC   │
-│   (Your Browser)│◄──►│   (Video Feed)  │◄──►│   (Controlled)  │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         ▲                       ▲
-         │                       │
-         ▼                       ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    🧠 KVMD Daemon                              │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌───────────┐ │
-│  │ 🎮 HID      │ │ 📺 Video    │ │ 🔌 GPIO     │ │ 💾 MSD    │ │
-│  │ Control     │ │ Capture     │ │ Control     │ │ Emulation │ │
-│  └─────────────┘ └─────────────┘ └─────────────┘ └───────────┘ │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-## 🎛️ Advanced Configuration
-
-### Custom Package Override
-
-```nix
-{
-  services.kvmd = {
-    enable = true;
-    package = pkgs.kvmd.override {
-      withTesseract = true;
-      # Add more overrides here
-    };
-  };
-}
-```
-
-### Integration with Other Services
-
-```nix
-{
-  services.kvmd.enable = true;
-
-  # 🔥 Firewall configuration
-  networking.firewall.allowedTCPPorts = [ 80 443 8080 8081 ];
-
-  # 🛡️ HTTPS with Let's Encrypt
-  services.nginx = {
-    enable = true;
-    # Your nginx config here
-  };
-}
-```
+| Option                        | Type      | Default      | Description                                         |
+|-------------------------------|-----------|--------------|-----------------------------------------------------|
+| `enable`                      | `bool`    | `false`      | 🟢 Enable the PiKVM daemon                          |
+| `package`                     | `package` | `pkgs.kvmd`  | 📦 kvmd package to use                              |
+| `withTesseract`               | `bool`    | `false`      | 👁️ Enable OCR with Tesseract                        |
+| `nginx.enable`                | `bool`    | `true`       | 🌐 Enable nginx web server for PiKVM                |
+| `nginx.httpPort`              | `port`    | `80`         | 🌐 HTTP port for nginx                              |
+| `nginx.httpsPort`             | `port`    | `443`        | 🔒 HTTPS port for nginx                             |
+| `nginx.httpsEnabled`          | `bool`    | `true`       | 🔒 Enable HTTPS support                             |
 
 ## 🐛 Troubleshooting
 
@@ -150,19 +87,12 @@ sudo journalctl -u ustreamer -f
 
 ### 🏥 Common Issues
 
-- **🚫 Permission denied**: Ensure your user is in the `kvmd` group
-- **📺 No video**: Check ustreamer service and video device permissions
-- **🌐 Can't access web UI**: Verify firewall settings and port availability
+- TODO later
 
 ## 🤝 Contributing
 
-We love contributions! 💝
-
-1. 🍴 Fork the repository
-2. 🌿 Create a feature branch
-3. 💻 Make your changes
-4. ✅ Test thoroughly
-5. 🚀 Submit a pull request
+I love contributions! 💝
+Dont hesitate to open issues or pull requests for bugs, features, or improvements.
 
 ## 📚 Related Projects
 
