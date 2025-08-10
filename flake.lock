@@ -35,14 +35,18 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1754685886,
-        "narHash": "sha256-viNMWWI4wMbMxYHqe24zEmOtg+9ubSZnm7ZW2DjZk84=",
-        "path": "/home/eymeric/code_bidouille/projet/nixpkgs",
-        "type": "path"
+        "lastModified": 1754685880,
+        "narHash": "sha256-x4LkuzbhyQtCOyZ9QD99SztcIMkypacdhR/7D+ecug4=",
+        "owner": "hatch01",
+        "repo": "nixpkgs",
+        "rev": "7ece79b342e99092de2090dc994c88ea328dcd99",
+        "type": "github"
       },
       "original": {
-        "path": "/home/eymeric/code_bidouille/projet/nixpkgs",
-        "type": "path"
+        "owner": "hatch01",
+        "ref": "pikvm",
+        "repo": "nixpkgs",
+        "type": "github"
       }
     },
     "nixpkgs-lib": {
