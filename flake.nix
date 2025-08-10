@@ -2,7 +2,7 @@
   description = "NixOS modules and packages for pikvm v3";
 
   inputs = {
-    nixpkgs.url = "/home/eymeric/code_bidouille/projet/nixpkgs";
+    nixpkgs.url = "github:hatch01/nixpkgs?ref=pikvm";
     # nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixos-hardware.url = "github:hatch01/nixos-hardware";
     #nixos-hardware.url = "/home/eymeric/tmp/nixos-hardware";
