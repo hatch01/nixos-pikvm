@@ -49,6 +49,37 @@
             kvmd = pkgs.callPackage ./packages/kvmd.nix { };
           };
           formatter = pkgs.nixfmt-tree;
+
+          # Developer shell with common tooling
+          devShells.default = pkgs.mkShell {
+            packages = [
+              pkgs.statix
+              pkgs.deadnix
+            ];
+          };
+
+          checks = {
+            formatting = pkgs.runCommand "formatting" { buildInputs = [ pkgs.nixfmt-tree ]; } ''
+              ${pkgs.nixfmt-tree}/bin/nixfmt --check ${./.} || {
+                echo "Formatting issues detected (nixfmt)."
+              }
+              touch $out
+            '';
+
+            statix = pkgs.runCommand "statix" { buildInputs = [ pkgs.statix ]; } ''
+              ${pkgs.statix}/bin/statix check ${./.} || {
+                echo "Statix suggestions emitted."
+              }
+              touch $out
+            '';
+
+            deadnix = pkgs.runCommand "deadnix" { buildInputs = [ pkgs.deadnix ]; } ''
+              ${pkgs.deadnix}/bin/deadnix --fail --no-lambda-arg --no-lambda-pattern ${./.} || {
+                echo "Deadnix reported unused code."
+              }
+              touch $out
+            '';
+          };
         };
     };
 }
