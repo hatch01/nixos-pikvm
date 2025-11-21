@@ -113,40 +113,41 @@ python3.pkgs.buildPythonApplication rec {
 
   patchPhase = ''
     substituteInPlace setup.py \
-      --replace "#!/usr/bin/env python3" "#!${python3}/bin/python3"
+      --replace-fail "#!/usr/bin/env python3" "#!${python3}/bin/python3"
     substituteInPlace genmap.py \
-      --replace "#!/usr/bin/env python3" "#!${python3}/bin/python3"
-    substituteInPlace kvmd/apps/__init__.py \
-      --replace "/usr/bin/vcgencmd" "${libraspberrypi}/bin/vcgencmd" \
-      --replace "/usr/bin/sudo" "/run/wrappers/bin/sudo" \
-      --replace "/usr/bin/kvmd-helper-pst-remount" "$out/bin/kvmd-helper-pst-remount" \
-      --replace "/usr/bin/ip" "${iproute2}/bin/ip" \
-      --replace "/usr/bin/systemd-run" "${systemd}/bin/systemd-run" \
-      --replace "/usr/bin/systemctl" "${systemd}/bin/systemctl" \
-      --replace "/usr/bin/janus" "${janus-gateway}/bin/janus" \
-      --replace "/bin/true" "${coreutils}/bin/true" \
-      --replace "/bin/false" "${coreutils}/bin/false" \
-      --replace "/usr/sbin/iptables" "${iptables}/bin/iptables"
+      --replace-fail "#!/usr/bin/env python3" "#!${python3}/bin/python3"
+    substituteInPlace kvmd/apps/_scheme.py \
+      --replace-fail "/usr/bin/vcgencmd" "${libraspberrypi}/bin/vcgencmd" \
+      --replace-fail "/usr/bin/sudo" "/run/wrappers/bin/sudo" \
+      --replace-fail "/usr/bin/kvmd-helper-pst-remount" "$out/bin/kvmd-helper-pst-remount" \
+      --replace-fail "/usr/bin/ip" "${iproute2}/bin/ip" \
+      --replace-fail "/usr/bin/systemd-run" "${systemd}/bin/systemd-run" \
+      --replace-fail "/usr/bin/systemctl" "${systemd}/bin/systemctl" \
+      --replace-fail "/usr/bin/janus" "${janus-gateway}/bin/janus" \
+      --replace-fail "/bin/true" "${coreutils}/bin/true" \
+      --replace-fail "/usr/sbin/iptables" "${iptables}/bin/iptables"
     substituteInPlace kvmd/helpers/remount/__init__.py \
-      --replace "/bin/mount" "${mount}/bin/mount"
+      --replace-fail "/bin/mount" "${mount}/bin/mount"
     substituteInPlace kvmd/apps/edidconf/__init__.py \
-      --replace "/usr/bin/v4l2-ctl" "${v4l-utils}/bin/v4l2-ctl"
+      --replace-fail "/usr/bin/v4l2-ctl" "${v4l-utils}/bin/v4l2-ctl"
     substituteInPlace kvmd/plugins/ugpio/ipmi.py \
-      --replace "/usr/bin/ipmitool" "${ipmitool}/bin/ipmitool"
+      --replace-fail "/usr/bin/ipmitool" "${ipmitool}/bin/ipmitool"
     substituteInPlace kvmd/plugins/msd/otg/__init__.py \
-      --replace "/usr/bin/sudo" "/run/wrappers/bin/sudo" \
-      --replace "/usr/bin/kvmd-helper-otgmsd-remount" "$out/bin/kvmd-helper-otgmsd-remount"
+      --replace-fail "/usr/bin/sudo" "/run/wrappers/bin/sudo" \
+      --replace-fail "/usr/bin/kvmd-helper-otgmsd-remount" "$out/bin/kvmd-helper-otgmsd-remount"
     substituteInPlace hid/arduino/avrdude.py \
-      --replace "/usr/bin/avrdude" "${avrdude}/bin/avrdude"
-    substituteInPlace kvmd/apps/oled/sensors.py \
-      --replace "#!/usr/bin/env python3" "#!${python3}/bin/python3"
-    substituteInPlace kvmd/apps/oled/screen.py \
-      --replace "#!/usr/bin/env python3" "#!${python3}/bin/python3"
-    substituteInPlace kvmd/apps/oled/__init__.py \
-      --replace "#!/usr/bin/env python3" "#!${python3}/bin/python3"
+      --replace-fail "/usr/bin/avrdude" "${avrdude}/bin/avrdude"
 
     substituteInPlace kvmd/apps/otg/__init__.py \
-      --replace "os.mkdir(path)" "os.makedirs(path, exist_ok=True)"
+      --replace-fail "os.mkdir(path)" "os.makedirs(path, exist_ok=True)"
+
+    # Patch config files
+    for file in configs/kvmd/main/*.yaml; do
+      substituteInPlace "$file" \
+        --replace-fail "/usr/bin/ustreamer" "${lib.getExe ustreamer}" \
+        --replace-fail "/usr/share/kvmd/configs.default/kvmd" "$out/etc/kvmd/kvmd/main/"
+    done
+    cat configs/kvmd/main/v2-hdmi-rpi4.yaml
 
   '';
 
@@ -164,18 +165,18 @@ python3.pkgs.buildPythonApplication rec {
       }
     # Install all contrib keymaps
     mkdir -p $out/share/kvmd/keymaps
-    cp -r $src/contrib/keymaps/* $out/share/kvmd/keymaps/
+    cp -r contrib/keymaps/* $out/share/kvmd/keymaps/
 
     # Install web files
     mkdir -p $out/share/kvmd/web
-    if [ -d "$src/web" ]; then
-      cp -r $src/web/* $out/share/kvmd/web/
+    if [ -d "web" ]; then
+      cp -r web/* $out/share/kvmd/web/
     fi
 
     # Install kvmd-gencert script and make it executable
-    install -Dm755 $src/scripts/kvmd-gencert $out/bin/kvmd-gencert
+    install -Dm755 scripts/kvmd-gencert $out/bin/kvmd-gencert
     substituteInPlace $out/bin/kvmd-gencert \
-      --replace '/bin/bash' ${bash}/bin/bash
+      --replace-fail '/bin/bash' ${bash}/bin/bash
     wrapProgram $out/bin/kvmd-gencert \
       --prefix PATH : ${
         lib.makeBinPath [
@@ -186,7 +187,7 @@ python3.pkgs.buildPythonApplication rec {
 
     # Install config files
     mkdir -p $out/etc/kvmd
-    cp -r $src/configs/* $out/etc/kvmd/
+    cp -r configs/* $out/etc/kvmd/
   '';
 
   meta = with lib; {
