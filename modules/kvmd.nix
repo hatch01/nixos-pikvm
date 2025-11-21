@@ -130,9 +130,6 @@ in
       };
       apply-overlays-dtmerge.enable = true;
     };
-    hardware.deviceTree = {
-      filter = lib.mkForce "bcm2711-rpi-4-b.dtb";
-    };
 
     hardware.i2c.enable = true;
 
@@ -534,8 +531,5 @@ in
       "dtoverlay=disable-bt"
       "dtoverlay=dwc2,dr_mode=peripheral"
     ];
-
-    # Specify initramfs
-    # boot.initrd.kernel = "initramfs-linux.img";
   };
 }
