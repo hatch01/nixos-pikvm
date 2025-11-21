@@ -141,6 +141,19 @@ python3.pkgs.buildPythonApplication rec {
     substituteInPlace kvmd/apps/otg/__init__.py \
       --replace-fail "os.mkdir(path)" "os.makedirs(path, exist_ok=True)"
 
+    # Fix hardcoded default paths in argparse that fail validation in NixOS
+    # Remove type validators from argument defaults since argparse validates defaults
+    # even when not used. In NixOS we always provide paths explicitly via systemd.
+    substituteInPlace kvmd/apps/__init__.py \
+      --replace-fail 'parser.add_argument("--main-config", default="/usr/lib/kvmd/main.yaml", type=valid_abs_file,' \
+                     'parser.add_argument("--main-config", default="/usr/lib/kvmd/main.yaml",' \
+      --replace-fail 'parser.add_argument("--legacy-auth-config", default="/etc/kvmd/auth.yaml", type=valid_abs_path,' \
+                     'parser.add_argument("--legacy-auth-config", default="/etc/kvmd/auth.yaml",' \
+      --replace-fail 'parser.add_argument("--override-dir", default="/etc/kvmd/override.d", type=valid_abs_dir,' \
+                     'parser.add_argument("--override-dir", default="/etc/kvmd/override.d",' \
+      --replace-fail 'parser.add_argument("--override-config", default="/etc/kvmd/override.yaml", type=valid_abs_file,' \
+                     'parser.add_argument("--override-config", default="/etc/kvmd/override.yaml",'
+
     # Patch config files
     for file in configs/kvmd/main/*.yaml; do
       substituteInPlace "$file" \
