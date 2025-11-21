@@ -85,7 +85,7 @@ python3.pkgs.buildPythonApplication rec {
       python-periphery
     ]
     ++ [
-      (ustreamer.override {withPython = true;})
+      (ustreamer.override { withPython = true; })
       janus-gateway
       v4l-utils
       coreutils
@@ -181,6 +181,10 @@ python3.pkgs.buildPythonApplication rec {
           coreutils
         ]
       }
+
+    # Install config files
+    mkdir -p $out/etc/kvmd
+    cp -r $src/configs/* $out/etc/kvmd/
   '';
 
   meta = with lib; {
