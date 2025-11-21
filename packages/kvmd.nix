@@ -83,6 +83,8 @@ python3.pkgs.buildPythonApplication rec {
       zstandard
       binutils
       python-periphery
+      ruamel-base
+      ruamel-yaml
     ]
     ++ [
       (ustreamer.override { withPython = true; })
