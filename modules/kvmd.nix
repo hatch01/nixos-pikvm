@@ -492,25 +492,25 @@ in
       };
     };
 
-    boot.kernelModules = [
-      "configfs"
-      "dwc2"
-      "libcomposite"
-      "usb_f_ecm"
-      "tc358743"
-      "rtc_cmos"
-      "rtc_ds1307"
-      "rtc_pcf8563"
-    ];
+    # boot.kernelModules = [
+    #   "configfs"
+    #   "dwc2"
+    #   "libcomposite"
+    #   "usb_f_ecm"
+    #   "tc358743"
+    #   "rtc_cmos"
+    #   "rtc_ds1307"
+    #   "rtc_pcf8563"
+    # ];
 
     # Add boot options for PiKVM
-    boot.kernelParams = [
-      "hdmi_force_hotplug=1"
-      "gpu_mem=128"
-      "enable_uart=1"
-      "dtoverlay=tc358743"
-      "dtoverlay=disable-bt"
-      "dtoverlay=dwc2,dr_mode=peripheral"
-    ];
+    # boot.kernelParams = [
+    #   "hdmi_force_hotplug=1"
+    #   "gpu_mem=128"
+    #   "enable_uart=1"
+    #   "dtoverlay=tc358743"
+    #   "dtoverlay=disable-bt"
+    #   "dtoverlay=dwc2,dr_mode=peripheral"
+    # ];
   };
 }
