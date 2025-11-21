@@ -40,7 +40,11 @@ in
 
   config = mkIf (cfg.enable && cfg.nginx.enable) {
     # Add nginx user to kvmd groups for socket access
-    users.users.nginx.extraGroups = [ "kvmd" "kvmd-janus" "kvmd-media" ];
+    users.users.nginx.extraGroups = [
+      "kvmd"
+      "kvmd-janus"
+      "kvmd-media"
+    ];
 
     services.nginx = {
       enable = true;
@@ -82,8 +86,6 @@ in
         "default" = {
           default = true;
           # addSSL = cfg.nginx.httpsEnabled;
-
-
 
           # sslCertificate = mkIf cfg.nginx.httpsEnabled "/etc/kvmd/nginx/ssl/server.crt";
           # sslCertificateKey = mkIf cfg.nginx.httpsEnabled "/etc/kvmd/nginx/ssl/server.key";
