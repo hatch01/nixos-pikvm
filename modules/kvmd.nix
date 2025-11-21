@@ -382,7 +382,7 @@ in
     #   # wantedBy = [ "multi-user.target" ];
     # };
 
-    # Configure sudo permissions for kvmd users
+    # Configure sudo permissions for kvmd users stollen at https://github.com/pikvm/kvmd/tree/9f15b8847f8bbe0b78f57ec09c85cd33a1c0225d/configs/os/sudoers
     security.sudo = {
       enable = true;
       extraRules = [
