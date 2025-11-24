@@ -25,12 +25,6 @@ in
       description = "The kvmd package to use.";
     };
 
-    withTesseract = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Enable Tesseract OCR support for text recognition";
-    };
-
     hardwareVersion = mkOption {
       type = types.str;
       description = "The hardware version for udev rules. See https://github.com/pikvm/kvmd/tree/master/configs/os/udev for available options.";
@@ -154,7 +148,7 @@ in
         RuntimeDirectory = "kvmd kvmd/otg";
         RuntimeDirectoryMode = "0775";
         UMask = "0002";
-        ExecStart = "${lib.getExe (cfg.package.override { withTesseract = cfg.withTesseract; })} --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml --run";
+        ExecStart = "${lib.getExe cfg.package} --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml --run";
         Restart = "on-failure";
         RestartSec = "3";
       };
@@ -387,7 +381,13 @@ in
 
     # Ensure /dev/gpiochip* nodes are accessible to kvmd (try both possible subsystems)
     services.udev.extraRules =
-      builtins.readFile "${cfg.package}/etc/os/udev/common.rules"
+      ''
+        # GPIO and video device access for kvmd group
+        KERNEL=="gpiochip*", SUBSYSTEM=="gpio", GROUP="gpio", MODE="0660"
+        KERNEL=="gpiochip*", SUBSYSTEM=="misc", GROUP="gpio", MODE="0660"
+        KERNEL=="vchiq|vcsm|vcio", GROUP="video", MODE="0660"
+      ''
+      + builtins.readFile "${cfg.package}/etc/os/udev/common.rules"
       + builtins.readFile "${cfg.package}/etc/os/udev/${cfg.hardwareVersion}.rules";
 
     # Update the fstab entry for /var/lib/kvmd/msd to include x-systemd.requires
