@@ -25,6 +25,7 @@
   bash,
   libgpiod,
   mount,
+  sudo,
 }:
 python3.pkgs.buildPythonApplication rec {
   pname = "kvmd";
@@ -38,6 +39,13 @@ python3.pkgs.buildPythonApplication rec {
   };
   pyproject = true;
   build-system = with python3.pkgs; [ setuptools ];
+
+  passthru = {
+    helpers = {
+      otgmsdRemount = "${placeholder "out"}/bin/kvmd-helper-otgmsd-remount";
+      pstRemount = "${placeholder "out"}/bin/kvmd-helper-pst-remount";
+    };
+  };
 
   # src = builtins.path {
   #   path = "/home/eymeric/tmp/kvmd";
@@ -118,8 +126,8 @@ python3.pkgs.buildPythonApplication rec {
       --replace-fail "#!/usr/bin/env python3" "#!${python3}/bin/python3"
     substituteInPlace kvmd/apps/_scheme.py \
       --replace-fail "/usr/bin/vcgencmd" "${libraspberrypi}/bin/vcgencmd" \
-      --replace-fail "/usr/bin/sudo" "/run/wrappers/bin/sudo" \
-      --replace-fail "/usr/bin/kvmd-helper-pst-remount" "$out/bin/kvmd-helper-pst-remount" \
+      --replace-fail "/usr/bin/sudo" "${sudo}" \
+      --replace-fail "/usr/bin/kvmd-helper-pst-remount" "${placeholder "out"}/bin/kvmd-helper-pst-remount" \
       --replace-fail "/usr/bin/ip" "${iproute2}/bin/ip" \
       --replace-fail "/usr/bin/systemd-run" "${systemd}/bin/systemd-run" \
       --replace-fail "/usr/bin/systemctl" "${systemd}/bin/systemctl" \
@@ -133,8 +141,8 @@ python3.pkgs.buildPythonApplication rec {
     substituteInPlace kvmd/plugins/ugpio/ipmi.py \
       --replace-fail "/usr/bin/ipmitool" "${ipmitool}/bin/ipmitool"
     substituteInPlace kvmd/plugins/msd/otg/__init__.py \
-      --replace-fail "/usr/bin/sudo" "/run/wrappers/bin/sudo" \
-      --replace-fail "/usr/bin/kvmd-helper-otgmsd-remount" "$out/bin/kvmd-helper-otgmsd-remount"
+      --replace-fail "/usr/bin/sudo" "${sudo}" \
+      --replace-fail "/usr/bin/kvmd-helper-otgmsd-remount" "${placeholder "out"}/bin/kvmd-helper-otgmsd-remount"
     substituteInPlace hid/arduino/avrdude.py \
       --replace-fail "/usr/bin/avrdude" "${avrdude}/bin/avrdude"
 
