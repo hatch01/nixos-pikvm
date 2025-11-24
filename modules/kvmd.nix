@@ -8,6 +8,10 @@
 with lib;
 let
   cfg = config.services.kvmd;
+
+  # Convert settings to YAML format
+  settingsFormat = pkgs.formats.yaml { };
+  overrideFile = settingsFormat.generate "override.yaml" cfg.settings;
 in
 {
   imports = [
@@ -29,9 +33,45 @@ in
       type = types.str;
       description = "The hardware version for udev rules. See https://github.com/pikvm/kvmd/tree/master/configs/os/udev for available options.";
     };
+
+    settings = mkOption {
+      type = settingsFormat.type;
+      default = { };
+      example = literalExpression ''
+        {
+          kvmd = {
+            auth = {
+              totp = {
+                secret = {
+                  file = "/var/lib/kvmd/totp.secret";
+                };
+              };
+            };
+            hid = {
+              mouse_alt = {
+                device = "/dev/kvmd-hid-mouse-alt";
+              };
+            };
+          };
+        }
+      '';
+      description = ''
+        Configuration settings for kvmd. These will be converted to YAML
+        and placed in the override configuration file.
+        See https://docs.pikvm.org for available options.
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
+    # Set default TOTP path if not overridden by user
+    services.kvmd.settings = mkDefault {
+      kvmd.auth.totp.secret.file = "${cfg.package}/etc/kvmd/totp.secret";
+      kvmd.auth.internal.file = "${cfg.package}/etc/kvmd/htpasswd";
+      # FileNotFoundError: [Errno 2] No such file or directory: '/etc/kvmd/meta.yaml'
+      kvmd.info.meta = "${cfg.package}/etc/kvmd/meta.yaml";
+      kvmd.info.extras = "${cfg.package}/share/kvmd/extras";
+    };
     # Create required users and groups
     users.groups.kvmd = { };
     users.groups.kvmd-ipmi = { };
@@ -148,7 +188,7 @@ in
         RuntimeDirectory = "kvmd kvmd/otg";
         RuntimeDirectoryMode = "0775";
         UMask = "0002";
-        ExecStart = "${lib.getExe cfg.package} --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml --run";
+        ExecStart = "${lib.getExe cfg.package} --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${overrideFile} --run";
         Restart = "on-failure";
         RestartSec = "3";
       };
@@ -163,7 +203,7 @@ in
         Restart = "always";
         RestartSec = 3;
         AmbientCapabilities = "CAP_NET_BIND_SERVICE";
-        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-ipmi --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml --run";
+        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-ipmi --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${overrideFile} --run";
         TimeoutStopSec = 3;
       };
       wantedBy = [ "multi-user.target" ];
@@ -201,7 +241,7 @@ in
         UMask = "0002";
         RuntimeDirectory = "kvmd";
         RuntimeDirectoryMode = "0775";
-        ExecStart = "${cfg.package}/bin/kvmd-media --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml --run";
+        ExecStart = "${cfg.package}/bin/kvmd-media --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${overrideFile} --run";
         TimeoutStopSec = 10;
       };
       wantedBy = [ "multi-user.target" ];
@@ -218,7 +258,7 @@ in
         Restart = "always";
         RestartSec = "3";
         ExecStartPre = "${lib.getBin cfg.package}/bin/kvmd-oled --interval=3 --clear-on-exit --image=@hello.ppm";
-        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-oled --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml ";
+        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-oled --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${overrideFile} ";
         TimeoutStopSec = 3;
       };
       wantedBy = [ "multi-user.target" ];
@@ -267,8 +307,8 @@ in
       wants = [ "network-pre.target" ];
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-otgnet --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml start";
-        ExecStop = "${lib.getBin cfg.package}/bin/kvmd-otgnet --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml stop";
+        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-otgnet --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${overrideFile} start";
+        ExecStop = "${lib.getBin cfg.package}/bin/kvmd-otgnet --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${overrideFile} stop";
         RemainAfterExit = true;
       };
       # wantedBy = [ "multi-user.target" ];  # Disabled - ECM network function not configured
@@ -283,8 +323,8 @@ in
       before = [ "kvmd.service" ];
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-otg --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml start";
-        ExecStop = "${lib.getBin cfg.package}/bin/kvmd-otg --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml stop";
+        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-otg --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${overrideFile} start";
+        ExecStop = "${lib.getBin cfg.package}/bin/kvmd-otg --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${overrideFile} stop";
         RemainAfterExit = true;
       };
       wantedBy = [ "multi-user.target" ];
@@ -300,7 +340,7 @@ in
         Type = "simple";
         Restart = "always";
         RestartSec = "3";
-        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-pst --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml --run";
+        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-pst --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${overrideFile} --run";
         TimeoutStopSec = 5;
       };
       wantedBy = [ "multi-user.target" ];
@@ -332,7 +372,7 @@ in
         Type = "simple";
         Restart = "always";
         RestartSec = "3";
-        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-vnc --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml --run";
+        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-vnc --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${overrideFile} --run";
         TimeoutStopSec = 3;
       };
       wantedBy = [ "multi-user.target" ];

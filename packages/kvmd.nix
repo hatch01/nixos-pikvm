@@ -148,6 +148,11 @@ python3.pkgs.buildPythonApplication rec {
     substituteInPlace kvmd/apps/otg/__init__.py \
       --replace-fail "os.mkdir(path)" "os.makedirs(path, exist_ok=True)"
 
+    # Make inquiry_string_cdrom optional - doesn't exist on newer kernels (only inquiry_string exists)
+    substituteInPlace kvmd/apps/otg/__init__.py \
+      --replace-fail '_write(join(func_path, "lun.0/inquiry_string_cdrom"), inquiry_string_cdrom)' \
+                     '_write(join(func_path, "lun.0/inquiry_string_cdrom"), inquiry_string_cdrom, optional=True)'
+
     # Fix hardcoded default paths in argparse that fail validation in NixOS
     # Remove type validators from argument defaults since argparse validates defaults
     # even when not used. In NixOS we always provide paths explicitly via systemd.
@@ -191,6 +196,12 @@ python3.pkgs.buildPythonApplication rec {
     mkdir -p $out/share/kvmd/web
     if [ -d "web" ]; then
       cp -r web/* $out/share/kvmd/web/
+    fi
+
+    # Install extras directory (service manifests)
+    mkdir -p $out/share/kvmd/extras
+    if [ -d "kvmd/extras" ]; then
+      cp -r kvmd/extras/* $out/share/kvmd/extras/
     fi
 
     # Install kvmd-gencert script and make it executable
