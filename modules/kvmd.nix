@@ -175,35 +175,10 @@ in
       wantedBy = [ "multi-user.target" ];
     };
 
-    # systemd.services.kvmd-janus = {
-    #   description = "PiKVM - Janus WebRTC Gateway";
-    #   after = ["network.target" "network-online.target" "nss-lookup.target" "kvmd.service"];
-    #   wants = ["network-online.target"];
-    #   serviceConfig = {
-    #     User = "kvmd-janus";
-    #     Group = "kvmd-janus";
-    #     Type = "simple";
-    #     Restart = "always";
-    #     RestartSec = 3;
-    #     AmbientCapabilities = "CAP_NET_RAW";
-    #     LimitNOFILE = 65536;
-    #     UMask = "0117";
-    #     ExecStart = "${lib.getBin cfg.package}/bin/kvmd-janus --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --run";
-    #     TimeoutStopSec = 10;
-    #     KillMode = "mixed";
-    #   };
-    #   wantedBy = ["multi-user.target"];
-    # };
-
     systemd.services.kvmd-janus = {
       description = "PiKVM - Janus WebRTC Gateway";
-      after = [
-        "network.target"
-        "network-online.target"
-        "nss-lookup.target"
-        "kvmd.service"
-      ];
-      wants = [ "network-online.target" ];
+      after = ["network.target" "network-online.target" "nss-lookup.target" "kvmd.service"];
+      wants = ["network-online.target"];
       serviceConfig = {
         User = "kvmd-janus";
         Group = "kvmd-janus";
