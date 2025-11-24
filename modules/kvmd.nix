@@ -154,7 +154,7 @@ in
         RuntimeDirectory = "kvmd kvmd/otg";
         RuntimeDirectoryMode = "0775";
         UMask = "0002";
-        ExecStart = "${lib.getExe (cfg.package.override { withTesseract = cfg.withTesseract; })} --run";
+        ExecStart = "${lib.getExe (cfg.package.override { withTesseract = cfg.withTesseract; })} --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml --run";
         Restart = "on-failure";
         RestartSec = "3";
       };
@@ -169,7 +169,7 @@ in
         Restart = "always";
         RestartSec = 3;
         AmbientCapabilities = "CAP_NET_BIND_SERVICE";
-        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-ipmi --run";
+        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-ipmi --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml --run";
         TimeoutStopSec = 3;
       };
       wantedBy = [ "multi-user.target" ];
@@ -188,7 +188,7 @@ in
     #     AmbientCapabilities = "CAP_NET_RAW";
     #     LimitNOFILE = 65536;
     #     UMask = "0117";
-    #     ExecStart = "${lib.getBin cfg.package}/bin/kvmd-janus --run";
+    #     ExecStart = "${lib.getBin cfg.package}/bin/kvmd-janus --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --run";
     #     TimeoutStopSec = 10;
     #     KillMode = "mixed";
     #   };
@@ -213,7 +213,7 @@ in
         AmbientCapabilities = "CAP_NET_RAW";
         LimitNOFILE = 65536;
         UMask = "0002";
-        ExecStart = "${pkgs.janus-gateway}/bin/janus --disable-colors --plugins-folder=${pkgs.ustreamer}/lib/ustreamer/janus --configs-folder=/etc/kvmd/janus";
+        ExecStart = "${pkgs.janus-gateway}/bin/janus --disable-colors --plugins-folder=${pkgs.ustreamer}/lib/ustreamer/janus --configs-folder=${cfg.package}/etc/janus";
         TimeoutStopSec = 10;
         KillMode = "mixed";
       };
@@ -232,7 +232,7 @@ in
         UMask = "0002";
         RuntimeDirectory = "kvmd";
         RuntimeDirectoryMode = "0775";
-        ExecStart = "${cfg.package}/bin/kvmd-media --run";
+        ExecStart = "${cfg.package}/bin/kvmd-media --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml --run";
         TimeoutStopSec = 10;
       };
       wantedBy = [ "multi-user.target" ];
@@ -249,7 +249,7 @@ in
         Restart = "always";
         RestartSec = "3";
         ExecStartPre = "${lib.getBin cfg.package}/bin/kvmd-oled --interval=3 --clear-on-exit --image=@hello.ppm";
-        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-oled";
+        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-oled --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml ";
         TimeoutStopSec = 3;
       };
       wantedBy = [ "multi-user.target" ];
@@ -298,7 +298,7 @@ in
       wants = [ "network-pre.target" ];
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-otgnet start";
+        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-otgnet --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml start";
         ExecStop = "${lib.getBin cfg.package}/bin/kvmd-otgnet stop";
         RemainAfterExit = true;
       };
@@ -314,7 +314,7 @@ in
       before = [ "kvmd.service" ];
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-otg --main-config ${cfg.package}/etc/kvmd/kvmd/main/${cfg.hardwareVersion}.yaml start";
+        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-otg --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml start";
         ExecStop = "${lib.getBin cfg.package}/bin/kvmd-otg stop";
         RemainAfterExit = true;
       };
@@ -331,7 +331,7 @@ in
         Type = "simple";
         Restart = "always";
         RestartSec = "3";
-        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-pst --run";
+        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-pst --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml --run";
         TimeoutStopSec = 5;
       };
       wantedBy = [ "multi-user.target" ];
@@ -347,7 +347,7 @@ in
       before = [ "kvmd.service" ];
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = "${pkgs.v4l-utils}/bin/v4l2-ctl --device=/dev/video0 --set-edid=file=/etc/kvmd/tc358743-edid.hex --info-edid";
+        ExecStart = "${pkgs.v4l-utils}/bin/v4l2-ctl --device=/dev/video0 --set-edid=file=${cfg.package}/etc/kvmd/edid/${lib.elemAt (lib.splitString "-" cfg.hardwareVersion) 0}.hex --info-edid";
         ExecStop = "${pkgs.v4l-utils}/bin/v4l2-ctl --device=/dev/video0 --clear-edid";
         RemainAfterExit = true;
       };
@@ -363,7 +363,7 @@ in
         Type = "simple";
         Restart = "always";
         RestartSec = "3";
-        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-vnc --run";
+        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-vnc --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${cfg.package}/etc/kvmd/override.yaml --run";
         TimeoutStopSec = 3;
       };
       wantedBy = [ "multi-user.target" ];
@@ -376,7 +376,7 @@ in
     #     Type = "simple";
     #     Restart = "always";
     #     RestartSec = "3";
-    #     ExecStart = "${lib.getBin cfg.package}/bin/kvmd-watchdog run";
+    #     ExecStart = "${lib.getBin cfg.package}/bin/kvmd-watchdog --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml run";
     #     TimeoutStopSec = 3;
     #   };
     #   # wantedBy = [ "multi-user.target" ];
@@ -384,7 +384,6 @@ in
 
     # Configure sudo permissions for kvmd users stollen at https://github.com/pikvm/kvmd/tree/9f15b8847f8bbe0b78f57ec09c85cd33a1c0225d/configs/os/sudoers
     security.sudo = {
-      enable = true;
       extraRules = [
         {
           users = [ "kvmd" ];
@@ -413,8 +412,8 @@ in
 
     # Ensure /dev/gpiochip* nodes are accessible to kvmd (try both possible subsystems)
     services.udev.extraRules =
-      builtins.readFile "${cfg.package}/etc/kvmd/os/udev/common.rules"
-      + builtins.readFile "${cfg.package}/etc/kvmd/os/udev/${cfg.hardwareVersion}.rules";
+      builtins.readFile "${cfg.package}/etc/os/udev/common.rules"
+      + builtins.readFile "${cfg.package}/etc/os/udev/${cfg.hardwareVersion}.rules";
 
     # Update the fstab entry for /var/lib/kvmd/msd to include x-systemd.requires
     fileSystems."/var/lib/kvmd/msd" = {
@@ -492,25 +491,25 @@ in
       };
     };
 
-    # boot.kernelModules = [
-    #   "configfs"
-    #   "dwc2"
-    #   "libcomposite"
-    #   "usb_f_ecm"
-    #   "tc358743"
-    #   "rtc_cmos"
-    #   "rtc_ds1307"
-    #   "rtc_pcf8563"
-    # ];
+    boot.kernelModules = [
+      "configfs"
+      "dwc2"
+      "libcomposite"
+      "usb_f_ecm"
+      "tc358743"
+      "rtc_cmos"
+      "rtc_ds1307"
+      "rtc_pcf8563"
+    ];
 
     # Add boot options for PiKVM
-    # boot.kernelParams = [
-    #   "hdmi_force_hotplug=1"
-    #   "gpu_mem=128"
-    #   "enable_uart=1"
-    #   "dtoverlay=tc358743"
-    #   "dtoverlay=disable-bt"
-    #   "dtoverlay=dwc2,dr_mode=peripheral"
-    # ];
+    boot.kernelParams = [
+      "hdmi_force_hotplug=1"
+      "gpu_mem=128"
+      "enable_uart=1"
+      "dtoverlay=tc358743"
+      "dtoverlay=disable-bt"
+      "dtoverlay=dwc2,dr_mode=peripheral"
+    ];
   };
 }

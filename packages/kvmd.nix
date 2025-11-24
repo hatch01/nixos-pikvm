@@ -200,7 +200,7 @@ python3.pkgs.buildPythonApplication rec {
 
     # Install config files
     mkdir -p $out/etc/kvmd
-    cp -r configs/* $out/etc/kvmd/
+    cp -r configs/* $out/etc/
   '';
 
   meta = with lib; {
