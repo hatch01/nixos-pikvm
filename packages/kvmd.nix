@@ -55,10 +55,10 @@ python3.pkgs.buildPythonApplication rec {
       dbus-python
       evdev
       hidapi
-      ldap
+      python-ldap
       mako
       netifaces
-      pam
+      python-pam
       passlib
       pillow
       psutil
@@ -78,7 +78,7 @@ python3.pkgs.buildPythonApplication rec {
       spidev
       luma-core
       python3.pkgs.libgpiod
-      python3.pkgs.systemd
+      python3.pkgs.systemd-python
       xlib
       zstandard
       binutils
