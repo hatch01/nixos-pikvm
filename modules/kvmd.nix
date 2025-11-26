@@ -139,17 +139,6 @@ in
       isSystemUser = true;
     };
 
-    # Create necessary directories
-    systemd.tmpfiles.rules = [
-      "d /var/lib/kvmd 0755 kvmd kvmd -"
-      "d /var/lib/kvmd/msd 0755 kvmd kvmd -"
-      "d /var/lib/kvmd/pst 1775 kvmd-pst kvmd-pst -"
-      "d /etc/kvmd 0755 root root -"
-      "d /etc/kvmd/nginx 0755 root root -"
-      "d /etc/kvmd/nginx/ssl 0755 root root -"
-      "d /etc/kvmd/override.d 0755 root root -"
-    ];
-
     # Patch: generate /etc/kvmd/main.yaml with correct extras, platform, vcgencmd_cmd, keymap, streamer, and pst/remount_cmd paths
     # environment.etc."kvmd/main.yaml".text = ''
     #   kvmd:
