@@ -68,9 +68,18 @@ in
     services.kvmd.settings = mkDefault {
       kvmd.auth.totp.secret.file = "${cfg.package}/etc/kvmd/totp.secret";
       kvmd.auth.internal.file = "${cfg.package}/etc/kvmd/htpasswd";
-      # FileNotFoundError: [Errno 2] No such file or directory: '/etc/kvmd/meta.yaml'
       kvmd.info.meta = "${cfg.package}/etc/kvmd/meta.yaml";
       kvmd.info.extras = "${cfg.package}/share/kvmd/extras";
+      
+      # Override Janus paths for NixOS
+      janus.cmd = [
+        "${pkgs.janus-gateway}/bin/janus"
+        "--disable-colors"
+        "--plugins-folder=${pkgs.ustreamer}/lib/ustreamer/janus"
+        "--configs-folder=${cfg.package}/etc/janus"
+        "--interface={src_ip}"
+        "{o_stun_server}"
+      ];
     };
     # Create required users and groups
     users.groups.kvmd = { };
@@ -221,8 +230,8 @@ in
         RestartSec = 3;
         AmbientCapabilities = "CAP_NET_RAW";
         LimitNOFILE = 65536;
-        UMask = "0002";
-        ExecStart = "${pkgs.janus-gateway}/bin/janus --disable-colors --plugins-folder=${pkgs.ustreamer}/lib/ustreamer/janus --configs-folder=${cfg.package}/etc/janus";
+        UMask = "0117";
+        ExecStart = "${cfg.package}/bin/kvmd-janus --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${overrideFile} --run";
         TimeoutStopSec = 10;
         KillMode = "mixed";
       };
