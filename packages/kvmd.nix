@@ -26,7 +26,8 @@
   bash,
   libgpiod,
   mount,
-  gnused,
+  runCommand,
+  patch,
 }:
 python3.pkgs.buildPythonApplication rec {
   pname = "kvmd";
@@ -202,27 +203,30 @@ python3.pkgs.buildPythonApplication rec {
 
     # Install Janus JavaScript files - fetch from official sources and patch
     mkdir -p $out/share/kvmd/web/share/js/kvm
-    
-    # Fetch adapter.js
-    ${lib.getExe' coreutils "cp"} ${fetchurl {
+
+    # Fetch adapter.js directly
+    cp ${fetchurl {
       url = "https://webrtc.github.io/adapter/adapter-latest.js";
       sha256 = "sha256-YSjNHVJFIdk8m3YB7IAGOqULs1vUIJZPpZhME98xtUI=";
     }} $out/share/kvmd/web/share/js/kvm/adapter.js
-    
-    # Fetch and patch janus.js
-    ${lib.getExe' coreutils "cp"} ${fetchurl {
-      url = "https://raw.githubusercontent.com/meetecho/janus-gateway/v1.3.2/html/demos/janus.js";
-      sha256 = "sha256-7qQ39ucZ2xMalXFaZEyKQbMUQkqPHGcWzn706eGJ6BU=";
-    }} $out/share/kvmd/web/share/js/kvm/janus.js
-    
-    # Apply PiKVM patches to janus.js
-    # 1. Add import statement after the license comment (after line 26 which ends with " */")
-    ${lib.getExe' gnused "sed"} -i '/^[ \t]*\*\//a\\nimport "./adapter.js";' $out/share/kvmd/web/share/js/kvm/janus.js
-    # 2. Export Janus variable
-    ${lib.getExe' gnused "sed"} -i 's/^var Janus = (function/export var Janus = (function/' $out/share/kvmd/web/share/js/kvm/janus.js
-    # 3. Fix iceServers to support function
-    ${lib.getExe' gnused "sed"} -i 's/iceServers: iceServers,/iceServers: (typeof iceServers === "function" ? iceServers() : iceServers),/' $out/share/kvmd/web/share/js/kvm/janus.js
-    
+
+    # Fetch janus.js and apply PiKVM's official patch
+    cp ${runCommand "janus-patched.js" {
+      src = fetchurl {
+        url = "https://raw.githubusercontent.com/meetecho/janus-gateway/v1.3.2/html/demos/janus.js";
+        sha256 = "sha256-7qQ39ucZ2xMalXFaZEyKQbMUQkqPHGcWzn706eGJ6BU=";
+      };
+      patch = fetchurl {
+        url = "https://raw.githubusercontent.com/pikvm/packages/master/packages/janus-gateway-pikvm/0001-js.patch";
+        sha256 = "sha256-ppOuwsWyFDY+p2MYaKcvufroRxrWDR52MA5jB/rvxas=";
+      };
+      nativeBuildInputs = [ patch ];
+    } ''
+      cp $src janus.js
+      patch -p4 janus.js < $patch
+      cp janus.js $out
+    ''} $out/share/kvmd/web/share/js/kvm/janus.js
+
     chmod 644 $out/share/kvmd/web/share/js/kvm/janus.js
     chmod 644 $out/share/kvmd/web/share/js/kvm/adapter.js
 

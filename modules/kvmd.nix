@@ -526,5 +526,11 @@ in
       "dtoverlay=disable-bt"
       "dtoverlay=dwc2,dr_mode=peripheral"
     ];
+
+    # Create required directories
+    systemd.tmpfiles.rules = [
+      "d /etc/kvmd 0755 root root -"
+      "d /etc/kvmd/override.d 0755 root root -"
+    ];
   };
 }
