@@ -281,6 +281,15 @@ in
               extraConfig = ''
                 rewrite ^/api/media/ws$ /ws break;
                 rewrite ^/api/media/ws\?(.*)$ /ws?$1 break;
+                auth_request off;
+              '';
+            };
+
+            "/api/media" = {
+              proxyPass = "http://media";
+              extraConfig = ''
+                rewrite ^/api/media$ / break;
+                rewrite ^/api/media\?(.*)$ /?$1 break;
               '';
             };
           };
