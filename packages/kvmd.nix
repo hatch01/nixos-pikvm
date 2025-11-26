@@ -1,6 +1,7 @@
 {
   lib,
   fetchFromGitHub,
+  fetchurl,
   python3,
   tesseract,
   avrdude,
@@ -25,6 +26,7 @@
   bash,
   libgpiod,
   mount,
+  gnused,
 }:
 python3.pkgs.buildPythonApplication rec {
   pname = "kvmd";
@@ -197,6 +199,32 @@ python3.pkgs.buildPythonApplication rec {
     if [ -d "web" ]; then
       cp -r web/* $out/share/kvmd/web/
     fi
+
+    # Install Janus JavaScript files - fetch from official sources and patch
+    mkdir -p $out/share/kvmd/web/share/js/kvm
+    
+    # Fetch adapter.js
+    ${lib.getExe' coreutils "cp"} ${fetchurl {
+      url = "https://webrtc.github.io/adapter/adapter-latest.js";
+      sha256 = "sha256-YSjNHVJFIdk8m3YB7IAGOqULs1vUIJZPpZhME98xtUI=";
+    }} $out/share/kvmd/web/share/js/kvm/adapter.js
+    
+    # Fetch and patch janus.js
+    ${lib.getExe' coreutils "cp"} ${fetchurl {
+      url = "https://raw.githubusercontent.com/meetecho/janus-gateway/v1.3.2/html/demos/janus.js";
+      sha256 = "sha256-7qQ39ucZ2xMalXFaZEyKQbMUQkqPHGcWzn706eGJ6BU=";
+    }} $out/share/kvmd/web/share/js/kvm/janus.js
+    
+    # Apply PiKVM patches to janus.js
+    # 1. Add import statement after the license comment (after line 26 which ends with " */")
+    ${lib.getExe' gnused "sed"} -i '/^[ \t]*\*\//a\\nimport "./adapter.js";' $out/share/kvmd/web/share/js/kvm/janus.js
+    # 2. Export Janus variable
+    ${lib.getExe' gnused "sed"} -i 's/^var Janus = (function/export var Janus = (function/' $out/share/kvmd/web/share/js/kvm/janus.js
+    # 3. Fix iceServers to support function
+    ${lib.getExe' gnused "sed"} -i 's/iceServers: iceServers,/iceServers: (typeof iceServers === "function" ? iceServers() : iceServers),/' $out/share/kvmd/web/share/js/kvm/janus.js
+    
+    chmod 644 $out/share/kvmd/web/share/js/kvm/janus.js
+    chmod 644 $out/share/kvmd/web/share/js/kvm/adapter.js
 
     # Install extras directory (service manifests)
     mkdir -p $out/share/kvmd/extras

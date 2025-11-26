@@ -85,10 +85,10 @@ in
       virtualHosts = {
         "default" = {
           default = true;
-          # addSSL = cfg.nginx.httpsEnabled;
+          addSSL = cfg.nginx.httpsEnabled;
 
-          # sslCertificate = mkIf cfg.nginx.httpsEnabled "/etc/kvmd/nginx/ssl/server.crt";
-          # sslCertificateKey = mkIf cfg.nginx.httpsEnabled "/etc/kvmd/nginx/ssl/server.key";
+          sslCertificate = mkIf cfg.nginx.httpsEnabled "/etc/kvmd/nginx/ssl/server.crt";
+          sslCertificateKey = mkIf cfg.nginx.httpsEnabled "/etc/kvmd/nginx/ssl/server.key";
 
           extraConfig = ''
             absolute_redirect off;
@@ -259,22 +259,6 @@ in
               '';
             };
 
-            "= /share/js/kvm/janus.js" = {
-              alias = "${pkgs.janus-gateway}/share/janus/javascript/janus.js";
-              extraConfig = ''
-                add_header Cache-Control "no-store, no-cache, must-revalidate";
-                expires -1;
-              '';
-            };
-
-            "= /share/js/kvm/adapter.js" = {
-              alias = "${pkgs.janus-gateway}/share/janus/javascript/adapter.js";
-              extraConfig = ''
-                add_header Cache-Control "no-store, no-cache, must-revalidate";
-                expires -1;
-              '';
-            };
-
             "/api/media/ws" = {
               proxyPass = "http://media";
               proxyWebsockets = true;
@@ -284,42 +268,35 @@ in
                 auth_request off;
               '';
             };
-
-            "/api/media" = {
-              proxyPass = "http://media";
-              extraConfig = ''
-                rewrite ^/api/media$ / break;
-                rewrite ^/api/media\?(.*)$ /?$1 break;
-              '';
-            };
           };
         };
       };
     };
 
     # Generate self-signed certificate if HTTPS is enabled
-    # systemd.services.pikvm-nginx-ssl = mkIf cfg.nginx.httpsEnabled {
-    #   description = "Generate PiKVM nginx SSL certificate";
-    #   wantedBy = [ "nginx.service" ];
-    #   after = [ "systemd-tmpfiles-setup.service" ];
-    #   before = [ "nginx.service" ];
-    #   serviceConfig = {
-    #     Type = "oneshot";
-    #     RemainAfterExit = true;
-    #     ExecStart = pkgs.writeScript "generate-ssl-cert" ''
-    #       #!${pkgs.bash}/bin/bash
-    #       mkdir -p /etc/kvmd/nginx/ssl
-    #       if [ ! -f /etc/kvmd/nginx/ssl/server.crt ] || [ ! -f /etc/kvmd/nginx/ssl/server.key ]; then
-    #         ${pkgs.openssl}/bin/openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    #           -keyout /etc/kvmd/nginx/ssl/server.key \
-    #           -out /etc/kvmd/nginx/ssl/server.crt \
-    #           -subj "/C=US/ST=State/L=City/O=Organization/OU=OrgUnit/CN=pikvm"
-    #         chmod 600 /etc/kvmd/nginx/ssl/server.key
-    #         chmod 644 /etc/kvmd/nginx/ssl/server.crt
-    #       fi
-    #     '';
-    #   };
-    # };
+    systemd.services.pikvm-nginx-ssl = mkIf cfg.nginx.httpsEnabled {
+      description = "Generate PiKVM nginx SSL certificate";
+      wantedBy = [ "nginx.service" ];
+      after = [ "systemd-tmpfiles-setup.service" ];
+      before = [ "nginx.service" ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        ExecStart = pkgs.writeScript "generate-ssl-cert" ''
+          #!${pkgs.bash}/bin/bash
+          mkdir -p /etc/kvmd/nginx/ssl
+          if [ ! -f /etc/kvmd/nginx/ssl/server.crt ] || [ ! -f /etc/kvmd/nginx/ssl/server.key ]; then
+            ${pkgs.openssl}/bin/openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+              -keyout /etc/kvmd/nginx/ssl/server.key \
+              -out /etc/kvmd/nginx/ssl/server.crt \
+              -subj "/C=US/ST=State/L=City/O=Organization/OU=OrgUnit/CN=pikvm"
+            chown root:nginx /etc/kvmd/nginx/ssl/server.key
+            chmod 640 /etc/kvmd/nginx/ssl/server.key
+            chmod 644 /etc/kvmd/nginx/ssl/server.crt
+          fi
+        '';
+      };
+    };
 
     # Basic CSS file
     environment.etc."kvmd/web.css".text = ''
@@ -342,7 +319,7 @@ in
       "d /tmp/kvmd-nginx/scgi_temp 0755 nginx nginx -"
       "d /tmp/kvmd-nginx/uwsgi_temp 0755 nginx nginx -"
       # Ensure socket directories have proper permissions for nginx access
-      "d /run/kvmd 0775 kvmd kvmd -"
+      "d /run/kvmd 0777 kvmd kvmd -"
       "d /run/janus 0775 kvmd-janus kvmd-janus -"
     ];
   };
