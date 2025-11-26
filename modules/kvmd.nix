@@ -70,7 +70,7 @@ in
       kvmd.auth.internal.file = "${cfg.package}/etc/kvmd/htpasswd";
       kvmd.info.meta = "${cfg.package}/etc/kvmd/meta.yaml";
       kvmd.info.extras = "${cfg.package}/share/kvmd/extras";
-      
+
       # Override Janus paths for NixOS
       janus.cmd = [
         "${pkgs.janus-gateway}/bin/janus"
@@ -185,6 +185,7 @@ in
         Group = "kvmd";
         RuntimeDirectory = "kvmd kvmd/otg";
         RuntimeDirectoryMode = "0775";
+        RuntimeDirectoryPreserve = "yes";
         UMask = "0002";
         ExecStart = "${lib.getExe cfg.package} --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${overrideFile} --run";
         Restart = "on-failure";
@@ -239,6 +240,7 @@ in
         UMask = "0002";
         RuntimeDirectory = "kvmd";
         RuntimeDirectoryMode = "0775";
+        RuntimeDirectoryPreserve = "yes";
         ExecStart = "${cfg.package}/bin/kvmd-media --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${overrideFile} --run";
         TimeoutStopSec = 10;
       };
