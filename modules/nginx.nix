@@ -72,7 +72,7 @@ in
         };
         "janus-ws" = {
           servers = {
-            "unix:/run/janus/janus.sock" = { };
+            "unix:/run/kvmd/janus-ws.sock" = { };
           };
         };
         "media" = {
