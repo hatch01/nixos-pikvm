@@ -2,10 +2,8 @@
   description = "NixOS modules and packages for pikvm v3";
 
   inputs = {
-    nixpkgs.url = "github:hatch01/nixpkgs?ref=pikvm";
-    # nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixos-hardware.url = "github:nixos/nixos-hardware";
-    #nixos-hardware.url = "/home/eymeric/tmp/nixos-hardware";
     flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
