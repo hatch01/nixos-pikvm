@@ -390,7 +390,7 @@ in
 
     systemd.services.kvmd-pst = {
       description = "PiKVM - The KVMD persistent storage manager";
-      before = [ "kvmd.service" ];
+      after = [ "kvmd.service" ];
 
       serviceConfig = {
         User = "kvmd-pst";
