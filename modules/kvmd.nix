@@ -12,6 +12,13 @@ let
   # Convert settings to YAML format
   settingsFormat = pkgs.formats.yaml { };
   overrideFile = settingsFormat.generate "override.yaml" cfg.settings;
+
+  # Determine the htpasswd file path based on whether passwordFile is set
+  htpasswdFile = if cfg.passwordFile != null
+    then "/run/kvmd/htpasswd"
+    else "${cfg.package}/etc/kvmd/htpasswd";
+
+
 in
 {
   imports = [
@@ -61,13 +68,30 @@ in
         See https://docs.pikvm.org for available options.
       '';
     };
+
+    user = mkOption {
+      type = types.str;
+      default = "admin";
+      description = "Username for PiKVM web UI authentication.";
+    };
+
+    passwordFile = mkOption {
+      type = types.nullOr types.path;
+      default = null;
+      description = ''
+        Path to a file containing the plain text password for the web UI user.
+        If set, this password will be hashed and used instead of the default.
+        The file should contain only the password with no trailing newline,
+        or the newline will be trimmed automatically.
+      '';
+    };
   };
 
   config = mkIf cfg.enable {
     # Set default TOTP path if not overridden by user
     services.kvmd.settings = mkDefault {
       kvmd.auth.totp.secret.file = "${cfg.package}/etc/kvmd/totp.secret";
-      kvmd.auth.internal.file = "${cfg.package}/etc/kvmd/htpasswd";
+      kvmd.auth.internal.file = htpasswdFile;
       kvmd.info.meta = "${cfg.package}/etc/kvmd/meta.yaml";
       kvmd.info.extras = "${cfg.package}/share/kvmd/extras";
 
@@ -170,6 +194,40 @@ in
 
     hardware.i2c.enable = true;
 
+    # Htpasswd generation service (only when passwordFile is set)
+    systemd.services.kvmd-htpasswd = mkIf (cfg.passwordFile != null) {
+      description = "Generate htpasswd for PiKVM";
+      wantedBy = [ "multi-user.target" ];
+      before = [ "kvmd.service" ];
+      requiredBy = [ "kvmd.service" ];
+
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        RuntimeDirectory = "kvmd";
+        RuntimeDirectoryMode = "0755";
+      };
+
+      path = [ pkgs.openssl pkgs.coreutils ];
+
+      script = ''
+        # Read password from file (trim trailing newline if present)
+        password=$(tr -d '\n' < ${cfg.passwordFile})
+
+        # Generate 16-byte random salt
+        salt=$(openssl rand 16)
+
+        # Generate SSHA512 hash: base64(sha512(password + salt) + salt)
+        # This matches the {SSHA512} format used by passlib/LDAP
+        hash=$(printf '%s%s' "$password" "$salt" | openssl dgst -sha512 -binary | cat - <(printf '%s' "$salt") | base64 -w0)
+
+        # Write htpasswd file with {SSHA512} prefix
+        echo "${cfg.user}:{SSHA512}$hash" > /run/kvmd/htpasswd
+        chmod 640 /run/kvmd/htpasswd
+        chown kvmd:kvmd /run/kvmd/htpasswd
+      '';
+    };
+
     # Main kvmd service
     systemd.services.kvmd = {
       description = "PiKVM daemon";
@@ -177,7 +235,7 @@ in
       after = [
         "network.target"
         "kvmd-otg.service"
-      ];
+      ] ++ lib.optional (cfg.passwordFile != null) "kvmd-htpasswd.service";
 
       serviceConfig = {
         Type = "simple";
