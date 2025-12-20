@@ -17,6 +17,14 @@ let
   htpasswdFile =
     if cfg.passwordFile != null then "/run/kvmd/htpasswd" else "${cfg.package}/etc/kvmd/htpasswd";
 
+  # Extract platform info from hardwareVersion (e.g., "v2-hdmi-rpi4" -> base=v2, video=hdmi, board=rpi4)
+  platformParts = lib.splitString "-" cfg.hardwareVersion;
+  platformFile = pkgs.writeText "platform" ''
+    PIKVM_MODEL=${lib.elemAt platformParts 0}
+    PIKVM_VIDEO=${lib.elemAt platformParts 1}
+    PIKVM_BOARD=${lib.elemAt platformParts 2}
+  '';
+
 in
 {
   imports = [
@@ -92,6 +100,7 @@ in
       kvmd.auth.internal.file = htpasswdFile;
       kvmd.info.meta = "${cfg.package}/etc/kvmd/meta.yaml";
       kvmd.info.extras = "${cfg.package}/share/kvmd/extras";
+      kvmd.info.hw.platform = "${platformFile}";
 
       # Override Janus paths for NixOS
       janus.cmd = [
