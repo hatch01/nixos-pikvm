@@ -14,10 +14,8 @@ let
   overrideFile = settingsFormat.generate "override.yaml" cfg.settings;
 
   # Determine the htpasswd file path based on whether passwordFile is set
-  htpasswdFile = if cfg.passwordFile != null
-    then "/run/kvmd/htpasswd"
-    else "${cfg.package}/etc/kvmd/htpasswd";
-
+  htpasswdFile =
+    if cfg.passwordFile != null then "/run/kvmd/htpasswd" else "${cfg.package}/etc/kvmd/htpasswd";
 
 in
 {
@@ -208,7 +206,10 @@ in
         RuntimeDirectoryMode = "0755";
       };
 
-      path = [ pkgs.openssl pkgs.coreutils ];
+      path = [
+        pkgs.openssl
+        pkgs.coreutils
+      ];
 
       script = ''
         # Read password from file (trim trailing newline if present)
@@ -235,7 +236,8 @@ in
       after = [
         "network.target"
         "kvmd-otg.service"
-      ] ++ lib.optional (cfg.passwordFile != null) "kvmd-htpasswd.service";
+      ]
+      ++ lib.optional (cfg.passwordFile != null) "kvmd-htpasswd.service";
 
       serviceConfig = {
         Type = "simple";
@@ -268,8 +270,13 @@ in
 
     systemd.services.kvmd-janus = {
       description = "PiKVM - Janus WebRTC Gateway";
-      after = ["network.target" "network-online.target" "nss-lookup.target" "kvmd.service"];
-      wants = ["network-online.target"];
+      after = [
+        "network.target"
+        "network-online.target"
+        "nss-lookup.target"
+        "kvmd.service"
+      ];
+      wants = [ "network-online.target" ];
       serviceConfig = {
         User = "kvmd-janus";
         Group = "kvmd-janus";

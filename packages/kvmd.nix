@@ -205,27 +205,33 @@ python3.pkgs.buildPythonApplication rec {
     mkdir -p $out/share/kvmd/web/share/js/kvm
 
     # Fetch adapter.js directly
-    cp ${fetchurl {
-      url = "https://webrtc.github.io/adapter/adapter-latest.js";
-      sha256 = "sha256-YSjNHVJFIdk8m3YB7IAGOqULs1vUIJZPpZhME98xtUI=";
-    }} $out/share/kvmd/web/share/js/kvm/adapter.js
+    cp ${
+      fetchurl {
+        url = "https://webrtc.github.io/adapter/adapter-latest.js";
+        sha256 = "sha256-YSjNHVJFIdk8m3YB7IAGOqULs1vUIJZPpZhME98xtUI=";
+      }
+    } $out/share/kvmd/web/share/js/kvm/adapter.js
 
     # Fetch janus.js and apply PiKVM's official patch
-    cp ${runCommand "janus-patched.js" {
-      src = fetchurl {
-        url = "https://raw.githubusercontent.com/meetecho/janus-gateway/v1.3.2/html/demos/janus.js";
-        sha256 = "sha256-7qQ39ucZ2xMalXFaZEyKQbMUQkqPHGcWzn706eGJ6BU=";
-      };
-      patch = fetchurl {
-        url = "https://raw.githubusercontent.com/pikvm/packages/master/packages/janus-gateway-pikvm/0001-js.patch";
-        sha256 = "sha256-ppOuwsWyFDY+p2MYaKcvufroRxrWDR52MA5jB/rvxas=";
-      };
-      nativeBuildInputs = [ patch ];
-    } ''
-      cp $src janus.js
-      patch -p4 janus.js < $patch
-      cp janus.js $out
-    ''} $out/share/kvmd/web/share/js/kvm/janus.js
+    cp ${
+      runCommand "janus-patched.js"
+        {
+          src = fetchurl {
+            url = "https://raw.githubusercontent.com/meetecho/janus-gateway/v1.3.2/html/demos/janus.js";
+            sha256 = "sha256-7qQ39ucZ2xMalXFaZEyKQbMUQkqPHGcWzn706eGJ6BU=";
+          };
+          patch = fetchurl {
+            url = "https://raw.githubusercontent.com/pikvm/packages/master/packages/janus-gateway-pikvm/0001-js.patch";
+            sha256 = "sha256-ppOuwsWyFDY+p2MYaKcvufroRxrWDR52MA5jB/rvxas=";
+          };
+          nativeBuildInputs = [ patch ];
+        }
+        ''
+          cp $src janus.js
+          patch -p4 janus.js < $patch
+          cp janus.js $out
+        ''
+    } $out/share/kvmd/web/share/js/kvm/janus.js
 
     chmod 644 $out/share/kvmd/web/share/js/kvm/janus.js
     chmod 644 $out/share/kvmd/web/share/js/kvm/adapter.js
