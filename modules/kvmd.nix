@@ -11,7 +11,7 @@ let
 
   # Convert settings to YAML format
   settingsFormat = pkgs.formats.yaml { };
-  overrideFile = settingsFormat.generate "override.yaml" cfg.settings;
+  overrideFile = settingsFormat.generate "override.yaml" (recursiveUpdate defaultConfig cfg.settings);
 
   # Determine the htpasswd file path based on whether passwordFile is set
   htpasswdFile =
@@ -25,6 +25,23 @@ let
     PIKVM_BOARD=${lib.elemAt platformParts 2}
   '';
 
+  defaultConfig = {
+    kvmd.auth.totp.secret.file = "${cfg.package}/etc/kvmd/totp.secret";
+    kvmd.auth.internal.file = htpasswdFile;
+    kvmd.info.meta = "${cfg.package}/etc/kvmd/meta.yaml";
+    kvmd.info.extras = "${cfg.package}/share/kvmd/extras";
+    kvmd.info.hw.platform = "${platformFile}";
+
+    # Override Janus paths for NixOS
+    janus.cmd = [
+      "${pkgs.janus-gateway}/bin/janus"
+      "--disable-colors"
+      "--plugins-folder=${pkgs.ustreamer}/lib/ustreamer/janus"
+      "--configs-folder=${cfg.package}/etc/janus"
+      "--interface={src_ip}"
+      "{o_stun_server}"
+    ];
+  };
 in
 {
   imports = [
@@ -94,24 +111,6 @@ in
   };
 
   config = mkIf cfg.enable {
-    # Set default TOTP path if not overridden by user
-    services.kvmd.settings = mkDefault {
-      kvmd.auth.totp.secret.file = "${cfg.package}/etc/kvmd/totp.secret";
-      kvmd.auth.internal.file = htpasswdFile;
-      kvmd.info.meta = "${cfg.package}/etc/kvmd/meta.yaml";
-      kvmd.info.extras = "${cfg.package}/share/kvmd/extras";
-      kvmd.info.hw.platform = "${platformFile}";
-
-      # Override Janus paths for NixOS
-      janus.cmd = [
-        "${pkgs.janus-gateway}/bin/janus"
-        "--disable-colors"
-        "--plugins-folder=${pkgs.ustreamer}/lib/ustreamer/janus"
-        "--configs-folder=${cfg.package}/etc/janus"
-        "--interface={src_ip}"
-        "{o_stun_server}"
-      ];
-    };
     # Create required users and groups
     users.groups.kvmd = { };
     users.groups.kvmd-ipmi = { };
@@ -422,9 +421,9 @@ in
 
     systemd.services.kvmd-tc358743 = {
       description = "PiKVM - EDID loader for TC358743";
-      wants = [ "dev-kvmd\\x2dvideo.device" ];
+      wants = [ "dev-v4l-subdev0.device" ];
       after = [
-        "dev-kvmd\\x2dvideo.device"
+        "dev-v4l-subdev0.device"
         "systemd-modules-load.service"
       ];
       before = [ "kvmd.service" ];
@@ -494,15 +493,14 @@ in
     };
 
     # Ensure /dev/gpiochip* nodes are accessible to kvmd (try both possible subsystems)
-    services.udev.extraRules =
-      ''
-        # GPIO and video device access for kvmd group
-        KERNEL=="gpiochip*", SUBSYSTEM=="gpio", GROUP="gpio", MODE="0660"
-        KERNEL=="gpiochip*", SUBSYSTEM=="misc", GROUP="gpio", MODE="0660"
-        KERNEL=="vchiq|vcsm|vcio", GROUP="video", MODE="0660"
-      ''
-      + builtins.readFile "${cfg.package}/etc/os/udev/common.rules"
-      + builtins.readFile "${cfg.package}/etc/os/udev/${cfg.hardwareVersion}.rules";
+    services.udev.extraRules = ''
+      # GPIO and video device access for kvmd group
+      KERNEL=="gpiochip*", SUBSYSTEM=="gpio", GROUP="gpio", MODE="0660"
+      KERNEL=="gpiochip*", SUBSYSTEM=="misc", GROUP="gpio", MODE="0660"
+      KERNEL=="vchiq|vcsm|vcio", GROUP="video", MODE="0660"
+    ''
+    + builtins.readFile "${cfg.package}/etc/os/udev/common.rules"
+    + builtins.readFile "${cfg.package}/etc/os/udev/${cfg.hardwareVersion}.rules";
 
     # Update the fstab entry for /var/lib/kvmd/msd to include x-systemd.requires
     fileSystems."/var/lib/kvmd/msd" = {
