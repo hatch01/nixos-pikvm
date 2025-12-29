@@ -175,7 +175,6 @@ python3.pkgs.buildPythonApplication rec {
         --replace-fail "/usr/bin/ustreamer" "${lib.getExe ustreamer}" \
         --replace-fail "/usr/share/kvmd/configs.default/kvmd" "$out/etc/kvmd/kvmd/main/"
     done
-    cat configs/kvmd/main/v2-hdmi-rpi4.yaml
 
   '';
 
