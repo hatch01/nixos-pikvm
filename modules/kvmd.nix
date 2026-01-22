@@ -232,7 +232,7 @@ in
 
         # Write htpasswd file with {SSHA512} prefix
         echo "${cfg.user}:{SSHA512}$hash" > /run/kvmd/htpasswd
-        chmod 640 /run/kvmd/htpasswd
+        chmod 644 /run/kvmd/htpasswd
         chown kvmd:kvmd /run/kvmd/htpasswd
       '';
     };
