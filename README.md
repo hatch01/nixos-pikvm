@@ -9,7 +9,7 @@
 
 This project brings the awesome **PiKVM** experience to **NixOS** through a clean, declarative configuration! 🎉
 
-## Whats Working
+## Whats Working (in production since 24 June 2025)
 
 - Video streaming
   - Direct H264 (need https enabled)
