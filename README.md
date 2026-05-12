@@ -35,7 +35,7 @@ Create a NixOS configuration for your Raspberry Pi.
 ```nix
 {
   imports = [
-    inputs.pikvm.nixosModules.default
+    nixos-pikvm.nixosModules.default
   ];
 
   services.kvmd = {
@@ -69,6 +69,19 @@ After flashing, add two ext4 partitions to your SD card:
 - **PIPST**: Used for PiKVM persistent storage
 
 You can use `gparted` or `fdisk` for partitioning.
+
+It should look like this at the end : 
+
+```bash
+$ lsblk -o name,mountpoint,label,size,uuid
+NAME        MOUNTPOINT        LABEL      SIZE UUID
+loop1                                    128M 3A0C-6BB0
+mmcblk0                                119,2G 
+├─mmcblk0p1                   FIRMWARE    30M 2178-694E
+├─mmcblk0p2 /                 NIXOS_SD  68,9G 44444444-4444-4444-8888-888888888888
+├─mmcblk0p3 /var/lib/kvmd/msd PIMSD       50G 959d9b5b-57ce-4cc2-921f-3b909e0d2058
+└─mmcblk0p4 /var/lib/kvmd/pst PIPST      256M a555d4cf-b2fe-4901-bd47-58dbc5031e22
+```
 
 ### Boot & Test
 
