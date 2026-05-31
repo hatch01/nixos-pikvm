@@ -28,6 +28,7 @@
   mount,
   runCommand,
   patch,
+  python314Packages,
 }:
 python314.pkgs.buildPythonApplication rec {
   pname = "kvmd";
@@ -97,7 +98,10 @@ python314.pkgs.buildPythonApplication rec {
       ruamel-yaml
     ]
     ++ [
-      (ustreamer.override { withPython = true; })
+      (ustreamer.override {
+        withPython = true;
+        python3Packages = python314Packages;
+      })
       janus-gateway
       v4l-utils
       coreutils
