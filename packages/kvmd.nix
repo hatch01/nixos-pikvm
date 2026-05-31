@@ -2,7 +2,7 @@
   lib,
   fetchFromGitHub,
   fetchurl,
-  python3,
+  python314,
   tesseract,
   avrdude,
   stdenv,
@@ -29,7 +29,7 @@
   runCommand,
   patch,
 }:
-python3.pkgs.buildPythonApplication rec {
+python314.pkgs.buildPythonApplication rec {
   pname = "kvmd";
   version = "4.171";
 
@@ -40,7 +40,7 @@ python3.pkgs.buildPythonApplication rec {
     sha256 = "sha256-w5KSjupGCs4E9x/iiO8qCR/jn5ZChxLfuu2BixAAQIQ=";
   };
   pyproject = true;
-  build-system = with python3.pkgs; [ setuptools ];
+  build-system = with python314.pkgs; [ setuptools ];
 
   passthru = {
     helpers = {
@@ -55,7 +55,7 @@ python3.pkgs.buildPythonApplication rec {
   # };
 
   propagatedBuildInputs =
-    with python3.pkgs;
+    with python314.pkgs;
     [
       aiofiles
       aiohttp
@@ -87,8 +87,8 @@ python3.pkgs.buildPythonApplication rec {
       six
       spidev
       luma-core
-      python3.pkgs.libgpiod
-      python3.pkgs.systemd-python
+      python314.pkgs.libgpiod
+      python314.pkgs.systemd-python
       xlib
       zstandard
       binutils
@@ -123,9 +123,9 @@ python3.pkgs.buildPythonApplication rec {
 
   patchPhase = ''
     substituteInPlace setup.py \
-      --replace-fail "#!/usr/bin/env python3" "#!${python3}/bin/python3"
+      --replace-fail "#!/usr/bin/env python3" "#!${python314}/bin/python3"
     substituteInPlace genmap.py \
-      --replace-fail "#!/usr/bin/env python3" "#!${python3}/bin/python3"
+      --replace-fail "#!/usr/bin/env python3" "#!${python314}/bin/python3"
     substituteInPlace kvmd/apps/_scheme.py \
       --replace-fail "/usr/bin/vcgencmd" "${libraspberrypi}/bin/vcgencmd" \
       --replace-fail "/usr/bin/sudo" "/run/wrappers/bin/sudo" \
