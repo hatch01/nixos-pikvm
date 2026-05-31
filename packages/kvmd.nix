@@ -180,7 +180,7 @@ python3.pkgs.buildPythonApplication rec {
 
   postInstall = ''
     wrapProgram $out/bin/kvmd \
-      --suffix PYTHONPATH : $out/lib/python3.12/site-packages \
+      --suffix PYTHONPATH : $out/lib/python*/site-packages \
       --suffix LD_LIBRARY_PATH : ${
         lib.makeLibraryPath (
           [
