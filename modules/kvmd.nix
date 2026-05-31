@@ -396,8 +396,8 @@ in
       before = [ "kvmd.service" ];
       serviceConfig = {
         Type = "oneshot";
-        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-otg --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${overrideFile} start";
-        ExecStop = "${lib.getBin cfg.package}/bin/kvmd-otg --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml --override-config ${overrideFile} stop";
+        ExecStart = "${lib.getBin cfg.package}/bin/kvmd-otg --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml start";
+        ExecStop = "${lib.getBin cfg.package}/bin/kvmd-otg --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml stop";
         RemainAfterExit = true;
       };
       wantedBy = [ "multi-user.target" ];
