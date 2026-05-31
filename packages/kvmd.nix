@@ -210,7 +210,7 @@ python314.pkgs.buildPythonApplication rec {
     # Fetch adapter.js directly
     cp ${
       fetchurl {
-        url = "https://webrtc.github.io/adapter/adapter-latest.js";
+        url = "https://webrtc.github.io/adapter/adapter-9.0.5.js";
         sha256 = "sha256-7AbZE59SJptSHqKC9ZCK/YYjWVcYTmP2QUGsL0X9hm0=";
       }
     } $out/share/kvmd/web/share/js/kvm/adapter.js
