@@ -32,13 +32,13 @@
 }:
 python314.pkgs.buildPythonApplication rec {
   pname = "kvmd";
-  version = "4.173";
+  version = "4.174";
 
   src = fetchFromGitHub {
     owner = "pikvm";
     repo = "kvmd";
     rev = "v${version}";
-    sha256 = "sha256-v7KQolQXAqm9tL19//WBhzbNwn4i1d/jNXqaIeH4mXM=";
+    sha256 = "sha256-ANk4R+laNqFqNOsBz0+UFJJtpDwoc4E/mcjwIVO8fIc=";
   };
   pyproject = true;
   build-system = with python314.pkgs; [ setuptools ];
