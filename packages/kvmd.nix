@@ -180,6 +180,11 @@ python314.pkgs.buildPythonApplication rec {
         --replace-fail "/usr/share/kvmd/configs.default/kvmd" "$out/etc/kvmd/kvmd/main/"
     done
 
+    substituteInPlace configs/os/udev/common.rules \
+    --replace-fail \
+      /usr/bin/systemd-escape \
+      ${systemd}/bin/systemd-escape
+
   '';
 
   postInstall = ''
