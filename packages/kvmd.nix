@@ -183,7 +183,10 @@ python314.pkgs.buildPythonApplication rec {
     substituteInPlace configs/os/udev/common.rules \
     --replace-fail \
       /usr/bin/systemd-escape \
-      ${systemd}/bin/systemd-escape
+      ${systemd}/bin/systemd-escape \
+    --replace-fail \
+      /usr/bin/chgrp \
+      ${coreutils}/bin/chgrp
 
   '';
 
