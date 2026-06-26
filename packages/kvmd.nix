@@ -186,7 +186,10 @@ python314.pkgs.buildPythonApplication rec {
       ${systemd}/bin/systemd-escape \
     --replace-fail \
       /usr/bin/chgrp \
-      ${coreutils}/bin/chgrp
+      ${coreutils}/bin/chgrp \
+    --replace-fail \
+      /usr/bin/chmod \
+      ${coreutils}/bin/chmod
 
   '';
 
