@@ -231,7 +231,7 @@ python314.pkgs.buildPythonApplication rec {
       runCommand "janus-patched.js"
         {
           src = fetchurl {
-            url = "https://raw.githubusercontent.com/meetecho/janus-gateway/v1.3.2/html/demos/janus.js";
+            url = "https://raw.githubusercontent.com/meetecho/janus-gateway/v1.4.1/html/demos/janus.js";
             sha256 = "sha256-7qQ39ucZ2xMalXFaZEyKQbMUQkqPHGcWzn706eGJ6BU=";
           };
           patch = fetchurl {
