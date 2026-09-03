@@ -188,13 +188,11 @@ in
     # Create an empty /etc/kvmd/platform file
     # environment.etc."kvmd/platform".text = "";
 
+    boot.loader.generic-extlinux-compatible.useGenerationDeviceTree = false;
+    hardware.raspberry-pi.configtxt.deviceTreeOverlays.pi4 = [ { dwc2.dr_mode = "peripheral"; } ];
     hardware.raspberry-pi."4" = {
       tc358743.enable = true;
       # xhci.enable = true; warning this cause boot to fail
-      dwc2 = {
-        enable = true;
-        dr_mode = "peripheral";
-      };
       apply-overlays-dtmerge.enable = true;
     };
 
