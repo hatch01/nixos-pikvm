@@ -35,7 +35,7 @@ Create a NixOS configuration for your Raspberry Pi.
 ```nix
 {
   imports = [
-    nixos-pikvm.nixosModules.default
+    nixos-pikvm.nixModules.default
   ];
 
   services.kvmd = {
@@ -47,6 +47,19 @@ Create a NixOS configuration for your Raspberry Pi.
   # ...other options (see linked config for details)
 }
 ```
+
+> **Note:** On a running system, the firmware partition (`/boot/firmware`,
+> usually the `FIRMWARE` partition of the SD/NIXOS_SD image) must be mounted
+> so PiKVM's device-tree overlays (dwc2, TC358743) can be applied at boot.
+> Declare it in your `hardware-configuration.nix`:
+>
+> ```nix
+> fileSystems."/boot/firmware" = {
+>   device = "/dev/disk/by-label/FIRMWARE";
+>   fsType = "vfat";
+>   options = [ "nofail" ];
+> };
+> ```
 
 ### Generate the SD Card Image
 

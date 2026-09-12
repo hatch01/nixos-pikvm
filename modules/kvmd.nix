@@ -196,6 +196,13 @@ in
       apply-overlays-dtmerge.enable = true;
     };
 
+    # See https://github.com/NixOS/nixos-hardware/commit/02545c60be59167bb0b215e04eecff1a1fdd248d
+    hardware.raspberry-pi.firmware = {
+      enable = true;
+      uboot.enable = true;
+      useGenerationDeviceTree = true;
+    };
+
     hardware.i2c.enable = true;
 
     # Htpasswd generation service (only when passwordFile is set)
