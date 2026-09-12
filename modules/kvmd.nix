@@ -200,6 +200,27 @@ in
     hardware.raspberry-pi.firmware = {
       enable = true;
       uboot.enable = true;
+      useGenerationDeviceTree = true;
+    };
+
+    # nixos-hardware's install-rpi-firmware only stages device trees from the
+    # generation dtbs; it never copies the stock vendor overlays that config.txt
+    # "dtoverlay=" lines reference, and its stale-file prune wipes overlays/ not
+    # written during that run. Re-stage them after that activation so the GPU
+    # firmware can apply dwc2 (and any other stock overlay) at boot.
+    system.activationScripts.rpi-vendor-overlays = {
+      deps = [ "raspberry-pi-firmware" ];
+      text = ''
+        target=${config.hardware.raspberry-pi.firmware.path}
+        if mountpoint -q "$target"; then
+          ovsrc=${pkgs.raspberrypifw}/share/raspberrypi/boot/overlays
+          mkdir -p "$target/overlays"
+          for ovr in "$ovsrc"/*.dtbo; do
+            install -p -m 644 "$ovr" "$target/overlays/" \
+              || echo "rpi-vendor-overlays: warning: failed to install $ovr" >&2
+          done
+        fi
+      '';
     };
 
     hardware.i2c.enable = true;
