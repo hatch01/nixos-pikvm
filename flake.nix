@@ -3,7 +3,8 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixos-hardware.url = "github:nixos/nixos-hardware";
+    # nixos-hardware.url = "github:nixos/nixos-hardware";
+    nixos-hardware.url = "github:hatch01/nixos-hardware/fix-vendor-overlays";
     flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
