@@ -23,16 +23,15 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1790499658,
-        "narHash": "sha256-nnkyocsxAPf9UXNm7mQInR1oE4Uysx9TV8dagyj8Drg=",
-        "owner": "hatch01",
+        "lastModified": 1791128201,
+        "narHash": "sha256-rlsYY/Dg/LhbIj51Aa6TLvRpZeb3KZgUTd7llQ5XcJE=",
+        "owner": "nixos",
         "repo": "nixos-hardware",
-        "rev": "34fef44f657aadf862ccd470e047d579f601b9f6",
+        "rev": "31cc5f4d9b9ba601071e8b8504601b9b176e2756",
         "type": "github"
       },
       "original": {
-        "owner": "hatch01",
-        "ref": "fix-vendor-overlays",
+        "owner": "nixos",
         "repo": "nixos-hardware",
         "type": "github"
       }
