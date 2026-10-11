@@ -51,6 +51,9 @@ Create a NixOS configuration for your Raspberry Pi.
 > **Note:** On a running system, the firmware partition (`/boot/firmware`,
 > usually the `FIRMWARE` partition of the SD/NIXOS_SD image) must be mounted
 > so PiKVM's device-tree overlays (dwc2, TC358743) can be applied at boot.
+> Keep in mind this partition is **not versioned per NixOS generation**: it is
+> shared between all generations, so changes there are not rolled back
+> automatically.
 > Declare it in your `hardware-configuration.nix`:
 >
 > ```nix
