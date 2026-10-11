@@ -169,26 +169,7 @@ in
       isSystemUser = true;
     };
 
-    # Patch: generate /etc/kvmd/main.yaml with correct extras, platform, vcgencmd_cmd, keymap, streamer, and pst/remount_cmd paths
-    # environment.etc."kvmd/main.yaml".text = ''
-    #   kvmd:
-    #     info:
-    #       extras: "${cfg.package}/lib/python3.12/site-packages/kvmd/apps/kvmd/info"
-    #       hw:
-    #         platform: "/etc/kvmd/platform"
-    #         vcgencmd_cmd: ["${pkgs.libraspberrypi}/bin/vcgencmd"]
-    #     hid:
-    #       keymap: "${cfg.package}/share/kvmd/keymaps/en-us"
-    #     streamer:
-    #       pre_start_cmd: ["${pkgs.coreutils}/bin/true", "pre-start"]
-    #       cmd: ["${pkgs.ustreamer}/bin/ustreamer", "--device=/dev/kvmd-video", "--persistent", "--dv-timings", "--format=uyvy", "--buffers=6", "--encoder=m2m-image", "--workers=3", "--quality={quality}", "--desired-fps={desired_fps}", "--drop-same-frames=30", "--unix={unix}", "--unix-rm", "--unix-mode=0660", "--exit-on-parent-death", "--process-name-prefix={process_name_prefix}", "--notify-parent", "--no-log-colors", "--jpeg-sink=kvmd::ustreamer::jpeg", "--jpeg-sink-mode=0660", "--h264-sink=kvmd::ustreamer::h264", "--h264-sink-mode=0660", "--h264-bitrate={h264_bitrate}", "--h264-gop={h264_gop}"]
-    #   pst:
-    #     remount_cmd: ["${pkgs.sudo}/bin/sudo", "--non-interactive", "${cfg.package}/bin/kvmd-helper-pst-remount", "{mode}"]
-    # '';
-    # Create an empty /etc/kvmd/platform file
-    # environment.etc."kvmd/platform".text = "";
 
-    boot.loader.generic-extlinux-compatible.useGenerationDeviceTree = false;
     hardware.raspberry-pi.configtxt.deviceTreeOverlays.pi4 = [ { dwc2.dr_mode = "peripheral"; } ];
     hardware.raspberry-pi."4" = {
       tc358743.enable = true;
@@ -196,7 +177,6 @@ in
       apply-overlays-dtmerge.enable = true;
     };
 
-    # See https://github.com/NixOS/nixos-hardware/commit/02545c60be59167bb0b215e04eecff1a1fdd248d
     hardware.raspberry-pi.firmware = {
       enable = true;
       uboot.enable = true;
@@ -456,19 +436,6 @@ in
       wantedBy = [ "multi-user.target" ];
     };
 
-    # systemd.services.kvmd-watchdog = {
-    #   description = "PiKVM - RTC-based hardware watchdog";
-    #   after = [ "systemd-modules-load.service" ];
-    #   serviceConfig = {
-    #     Type = "simple";
-    #     Restart = "always";
-    #     RestartSec = "3";
-    #     ExecStart = "${lib.getBin cfg.package}/bin/kvmd-watchdog --main-config ${cfg.package}/etc/kvmd/main/${cfg.hardwareVersion}.yaml run";
-    #     TimeoutStopSec = 3;
-    #   };
-    #   # wantedBy = [ "multi-user.target" ];
-    # };
-
     # Configure sudo permissions for kvmd users stollen at https://github.com/pikvm/kvmd/tree/9f15b8847f8bbe0b78f57ec09c85cd33a1c0225d/configs/os/sudoers
     security.sudo = {
       extraRules = [
@@ -537,23 +504,6 @@ in
       ];
       neededForBoot = false;
     };
-
-    # Add system.activationScripts to create and set proper permissions for helper scripts
-    # system.activationScripts.kvmd-helper-scripts = ''
-    #   # Create symlinks to the helper scripts in /run/wrappers/bin
-    #   # This allows the scripts to be found in the same location as sudo
-    #   mkdir -p /run/wrappers/bin
-    #   ln -sf ${cfg.package}/bin/kvmd-helper-otgmsd-remount /run/wrappers/bin/
-    #   ln -sf ${cfg.package}/bin/kvmd-helper-pst-remount /run/wrappers/bin/
-
-    #   # Ensure the helper scripts are executable and have proper permissions
-    #   if [ -f ${cfg.package}/bin/kvmd-helper-otgmsd-remount ]; then
-    #     chmod 755 ${cfg.package}/bin/kvmd-helper-otgmsd-remount
-    #   fi
-    #   if [ -f ${cfg.package}/bin/kvmd-helper-pst-remount ]; then
-    #     chmod 755 ${cfg.package}/bin/kvmd-helper-pst-remount
-    #   fi
-    # '';
 
     # Add a systemd service to ensure the file exists before mounting
     systemd.services.kvmd-msd-image = {
