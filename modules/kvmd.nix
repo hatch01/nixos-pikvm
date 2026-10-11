@@ -406,9 +406,9 @@ in
 
     systemd.services.kvmd-tc358743 = {
       description = "PiKVM - EDID loader for TC358743";
-      wants = [ "dev-v4l-subdev0.device" ];
+      wants = [ "dev-video0.device" ];
       after = [
-        "dev-v4l-subdev0.device"
+        "dev-video0.device"
         "systemd-modules-load.service"
       ];
       before = [ "kvmd.service" ];
