@@ -200,6 +200,7 @@ in
     hardware.raspberry-pi.firmware = {
       enable = true;
       uboot.enable = true;
+      useGenerationDeviceTree = true;
     };
 
     hardware.i2c.enable = true;
@@ -593,15 +594,15 @@ in
       "rtc_pcf8563"
     ];
 
-    # Add boot options for PiKVM
-    boot.kernelParams = [
-      "hdmi_force_hotplug=1"
-      "gpu_mem=128"
-      "enable_uart=1"
-      "dtoverlay=tc358743"
-      "dtoverlay=disable-bt"
-      "dtoverlay=dwc2,dr_mode=peripheral"
-    ];
+    # PiKVM firmware settings. These are config.txt directives, not kernel
+    # parameters, so they must go through the configtxt module to take effect.
+    # enable_uart defaults to on and dtoverlay=dwc2,dr_mode=peripheral is set
+    # in deviceTreeOverlays above; the tc358743 overlay is applied to the
+    # generation device tree (see useGenerationDeviceTree).
+    hardware.raspberry-pi.configtxt.settings.all = {
+      hdmi_force_hotplug = true;
+      gpu_mem = 128;
+    };
 
     # Create required directories
     systemd.tmpfiles.rules = [
