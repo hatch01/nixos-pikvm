@@ -49,9 +49,7 @@ in
     services.nginx = {
       enable = true;
 
-      appendConfig = ''
-        worker_processes 4;
-      '';
+      workerProcesses = 4;
 
       eventsConfig = ''
         worker_connections 1024;
